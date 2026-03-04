@@ -278,19 +278,19 @@ per Cell, dopo aver parlato del committente, formalizzo il seguente modello:
 per Grid, invece, formalizzo questo modello:
 	<code>
 	  public interface IGrid {
-		public int getRowsNum();
-		public int getColsNum();
-		public void setCellValue(int x, int y, boolean state);
-		public ICell getCell(int x, int y);
-		public boolean getCellValue(int x, int y);
-		public void reset();
+		public int getRowsNum(); //operazione primitiva che permette alla griglia, composta di celle, di comunicare il numero di righe che contiene
+		public int getColsNum(); //la griglia può comunicare il numero di colonne che contiene
+		public void setCellValue(int x, int y, boolean state); //la griglia, con un'operazione non primitiva, ha la capacità di modificare lo stato di una cella specifica dato dalle coordinate (x, y)
+		public ICell getCell(int x, int y); //la griglia può restituire un'oggetto dell'interfaccia ICell corrispondente alle coordinate (x, y)
+		public boolean getCellValue(int x, int y); //la griglia può rispondere a una query sullo stato della cella (x, y) restituendo true se viva e false se morta
+		public void reset(); //operazione non primitiva che da alla griglia la capacità di riportare tutte le celle al loro stato iniziale
 	  }
 	</code>
 </pre>
 
 <h2>Problem analysis</h2>
  
-<img src="C:\Users\paolo\Downloads\uml1.PNG" alt="foto uml" width="50%" height="50%">
+<img src="C:\Users\paolo\Downloads\uml1.PNG" alt="uml" width="50%" height="50%">
 
 <h2>Test plans</h2> 
 <pre>
