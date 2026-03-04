@@ -1,7 +1,7 @@
 # issLab2026
  Laboratorio di <b>Ingegneria dei Sistemi Software</b> a.a. 2025/2026 di Savino Paolo 0001241440
  
- link al mio template: <a href="https://savino1703.github.io/issLab2026/savino paolo.html">Paolo Savino</a>
+ link al mio template: <a href="https://savino1703.github.io/issLab2026/savino paolo.html">index dello sprint1</a>
 
  [Testo di riferimento:](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf)
  <!-- comment: [ancora personalizzata] -->
