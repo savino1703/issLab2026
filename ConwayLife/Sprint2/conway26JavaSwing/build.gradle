@@ -13,8 +13,8 @@ java {
 
 repositories {
     mavenCentral()
-    //flatDir {   dirs './libs'    }
-    flatDir {   dirs '../unibolibs'    } 
+    flatDir {   dirs './libs'    }
+    flatDir {   dirs '../../../unibolibs'    }
 }
 
 dependencies {
@@ -29,17 +29,16 @@ dependencies {
     implementation name: 'unibo.basicomm23-1.0'
     
     /* conway ******************************* */
-    //implementation name: 'conway26Java-1.0'
-
-    /* javalin ******************************* */
-	implementation 'io.javalin:javalin-bundle:6.1.3'
+    implementation name: 'conway26Java-1.0'
 }
 
 sourceSets {
-    //main.java.srcDirs += 'src'
+    main.java.srcDirs += 'src'
     main.java.srcDirs += 'src/main/java'
+    main.java.srcDirs += 'src/main/kotlin'
     main.java.srcDirs += 'src/main/resources'
     test.java.srcDirs += 'src/main/java/test'         //test is specific
+    test.java.srcDirs += 'src/main/kotlin/test'
 }
 
 eclipse {
@@ -49,22 +48,26 @@ eclipse {
 }
 
 application {
-    mainClass = 'conway26appl.MainConwayGui'
+    //Define the main class for the application.
+    mainClassName    = 'main.java.conway.MainConwayLifeJava'
 }
 
 jar {
     println("building jar")
     from sourceSets.main.allSource
-    manifest {
-        attributes 'Main-Class': application.mainClass.get()
+    from('./') {
+      include '*.pl'
+      include '*.json'
     }
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes 'Main-Class': "$mainClassName"
+    }
 }
  
 task dovesiamo {
     println("projectDir= $projectDir")
     println("buildDir  = $buildDir")
-}
+} 
  
 jacocoTestReport {
     dependsOn test // Il report viene generato solo dopo l'esecuzione dei test

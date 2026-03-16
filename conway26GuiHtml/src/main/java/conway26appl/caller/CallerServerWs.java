@@ -38,7 +38,7 @@ public class CallerServerWs  {
     	HttpClient client = HttpClient.newHttpClient();
         
         WebSocket webSocket = client.newWebSocketBuilder()
-            .buildAsync(URI.create("ws://localhost:7070/chat"), new WebSocketListener(latch))
+            .buildAsync(URI.create("ws://localhost:8080/chat"), new WebSocketListener(latch))
             .join();
 
         // Invio di un messaggio al server
@@ -49,6 +49,7 @@ public class CallerServerWs  {
 
         // Aspetta che la connessione venga chiusa o interrotta
         latch.await();
+        CommUtils.outred("setup1 finito");
     }     
 
     
@@ -64,6 +65,7 @@ public class CallerServerWs  {
         
         String c56 = reqmsg.toString().replace("CELL", "cell(5,6)");
         webSocket.sendText(c56, true);
+        
 
         // Aspetta che la connessione venga chiusa o interrotta
         latch.await();

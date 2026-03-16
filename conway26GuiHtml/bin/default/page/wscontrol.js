@@ -15,7 +15,7 @@ wscontrol.js
 				
  function  initWS(){
  /*1*/	  
-	  if( window.location.host =="" ) socketToGui = new WebSocket("ws://localhost:7070/chat");
+	  if( window.location.host =="" ) socketToGui = new WebSocket("ws://localhost:8080/chat");
 	  else 	socketToGui = new WebSocket("ws://"+window.location.host+"/chat");
 
  /*2*/socketToGui.onopen = () => {

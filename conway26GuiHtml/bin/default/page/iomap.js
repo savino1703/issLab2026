@@ -25,22 +25,26 @@ function createMapRep(){
 }//createMapRep
 
 
-    function updateCellColor(newX, newY,color) {
-       const cellxy = document.getElementById(`cell(${newY},${newX})`);
-	   console.log("updating cell-" + newY + "-" + newX + " to color " + color );
-      if( cellxy.classList.contains("live") ){
-        cellxy.classList.remove("live");
-      }
-      else if( cellxy.classList.contains("dead") ){
-        cellxy.classList.remove("dead");
-      }
-      if (color == 1) {
-        cellxy.classList.add("dead");
-      }else if (color == 0) {
-        cellxy.classList.add("live");
-      }
-
+function updateCellColor(newX, newY, color) {
+    // Usiamo newX e newY nell'ordine corretto in cui sono stati creati (i, j)
+    const cellxy = document.getElementById(`cell(${newX},${newY})`);
+    
+    if (!cellxy) {
+        console.error("Cella non trovata:", newX, newY);
+        return;
     }
+
+    console.log("Updating cell", newX, newY, "to state", color);
+
+    // Rimuoviamo gli stati precedenti
+    cellxy.classList.remove("live", "dead");
+
+    if (color == "1") {
+        cellxy.classList.add("dead"); // Cella attiva
+    } else {
+        cellxy.classList.add("live"); // Cella vuota
+    }
+}
     
 console.log("iomap.js loaded " + map);    
 createMapRep()

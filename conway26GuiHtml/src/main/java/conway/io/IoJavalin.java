@@ -1,4 +1,4 @@
-package conway.io;
+ package conway.io;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,8 +9,15 @@ import io.javalin.http.staticfiles.Location;
 import unibo.basicomm23.utils.CommUtils;
 
 public class IoJavalin {
+    private boolean isStarted = false; // Il gioco parte "fermo"
+        private domain.LifeController lifeController;
 	
 	public IoJavalin() {
+        // Inizializza LifeController (mock: da sistemare con istanze reali)
+        lifeController = new domain.LifeController(
+            new domain.Life(10, 10), // dimensioni esempio
+            new devices.MockOutdev() // istanza corretta
+        );
         var app = Javalin.create(config -> {
 			config.staticFiles.add(staticFiles -> {
 				staticFiles.directory = "/page";
@@ -22,7 +29,7 @@ public class IoJavalin {
 		}).start(8080);
         
         app.get("/", ctx -> {
-    		Path path = Path.of("./src/main/resources/page/ConwayInOutPage.html");   
+            Path path = Path.of("/conway26GuiHtml/src/main/resources/page/ConwayInOutPage.html");   
 		    if (Files.exists(path)) {
 		        // Usiamo Files.newInputStream che è più moderno di FileInputStream
 		        ctx.contentType("text/html").result(Files.newInputStream(path));
@@ -80,12 +87,34 @@ public class IoJavalin {
         });
         
         app.ws("/chat", ws -> {
-            ws.onConnect(ctx -> System.out.println("Client connected!"));
             ws.onMessage(ctx -> {
-                String message = ctx.message();
-                ctx.send("Echo: " + message);
+                String msg = ctx.message();
+                if (msg.contains("start")) {
+                    isStarted = true;
+                    lifeController.onStart();
+                    ctx.send("Gioco avviato: ora puoi interagire con la griglia.");
+                } else if (msg.contains("stop")) {
+                    isStarted = false;
+                    lifeController.onStop();
+                    ctx.send("Gioco fermato: interazione disabilitata.");
+                } else if (msg.contains("clear")) {
+                    lifeController.onClear();
+                    ctx.send("Griglia pulita.");
+                } else if (msg.contains("cell(")) {
+                    if (isStarted) {
+                        // Estrai coordinate cell(x,y)
+                        String cellCmd = msg.substring(msg.indexOf("cell("), msg.lastIndexOf(")") + 1);
+                        String[] parts = cellCmd.replace("cell(","").replace(")","").split(",");
+                        int x = Integer.parseInt(parts[0]);
+                        int y = Integer.parseInt(parts[1]);
+                        lifeController.switchCellState(x, y);
+                        ctx.send("cell("+x+","+y+",1)"); // invia stato aggiornato
+                    } else {
+                        ctx.send("Azioni bloccate: premi START per abilitare la griglia.");
+                    }
+                }
             });
-        });        
+        });
 	}
 	
  
