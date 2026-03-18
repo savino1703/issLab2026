@@ -1,0 +1,147 @@
+/* --- STILE GENERALE --- */
+body {
+	/* Font moderno e pulito per il testo normale */
+	font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	line-height: 1.6;
+	color: #333;
+	/* Larghezza contenuta per una lettura confortevole */
+	max-width: 1050px;
+	margin: 40px auto;
+	padding: 0 30px;
+	background-color: #fcfcfc;
+}
+
+/* --- TITOLI --- */
+h1 {
+	font-size: 2.2rem;
+	background-color: #f0f4ff;
+	color: #1e3a8a;
+	padding: 20px 30px;
+	border-radius: 12px;
+	border-left: 10px solid #3b82f6;
+	margin-bottom: 30px;
+}
+
+h2 {
+	font-size: 1.5rem;
+	background-color: #f1f5f9 !important;
+	color: #334155 !important;
+	padding: 10px 20px !important;
+	border-radius: 8px !important;
+	border-left: 6px solid #94a3b8 !important;
+	margin-top: 40px !important;
+	margin-bottom: 20px !important;
+}
+
+/* --- BLOCCHI DI CODICE E REQUISITI --- */
+/* Questo risolve il problema dei font che cozzano e della grandezza */
+pre,
+code {
+	/* Font monospazio moderno (stile VS Code) */
+	font-family: 'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace !important;
+	font-size: 0.95em !important;
+	/* Dimensione bilanciata rispetto al testo */
+}
+
+pre {
+	background-color: #f8fafc;
+	color: #334155;
+	padding: 25px;
+	border: 1px solid #e2e8f0;
+	border-left: 6px solid #3b82f6;
+	/* La barra blu che ti piaceva */
+	border-radius: 4px 10px 10px 4px;
+	overflow-x: auto;
+	/* Scrollbar orizzontale se il codice è lungo */
+	white-space: pre-wrap;
+	/* Manda a capo il testo lungo */
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+	margin: 20px 0;
+}
+
+/* Rimuove stili strani quando code è dentro pre */
+pre code {
+	font-size: inherit !important;
+	color: inherit;
+	background: none;
+	padding: 0;
+}
+
+/* --- LINK --- */
+a {
+	color: #2563eb;
+	text-decoration: none;
+	font-weight: 500;
+}
+
+a:hover {
+	text-decoration: underline;
+	color: #1d4ed8;
+}
+
+/* --- IMMAGINI --- */
+img {
+	max-width: 100%;
+	height: auto;
+	border-radius: 8px;
+	margin: 20px 0;
+	border: 1px solid #e2e8f0;
+}
+
+/* --- FOOTER (INFO PERSONALI) --- */
+.bottom-info {
+	display: flex;
+	align-items: center;
+	gap: 25px;
+	background: #1e3a8a !important;
+	/* Blu professionale scuro */
+	color: white !important;
+	padding: 25px;
+	border-radius: 15px;
+	margin-top: 60px;
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.bottom-info img {
+	border-radius: 50%;
+	/* Foto circolare */
+	border: 3px solid white;
+	margin: 0;
+	/* Rimuove il margine delle immagini standard */
+	object-fit: cover;
+}
+
+.bottom-info a {
+	color: #93c5fd;
+	/* Azzurro chiaro per leggibilità su sfondo scuro */
+}
+
+.bottom-info strong {
+	font-size: 1.1rem;
+}
+
+/* --- TABELLE (Opzionali per il futuro) --- */
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 20px 0;
+	background: white;
+}
+
+th,
+td {
+	border: 1px solid #e2e8f0;
+	padding: 12px;
+	text-align: left;
+}
+
+
+th {
+	background-color: #f8fafc;
+}
+
+/* Colore per i commenti (Grigio-Verde stile IDE) */
+.comment {
+	color: #6a9955 !important;
+	font-style: italic;
+}
