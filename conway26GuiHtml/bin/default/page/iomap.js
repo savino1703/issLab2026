@@ -12,7 +12,7 @@ function createMapRep(){
      for( let j=0; j<ncell; j++ ){
         const cellElement = document.createElement("div");
         cellElement.classList.add("cell");
-        cellElement.classList.add("live");
+        cellElement.classList.add("dead");
         cellElement.id = `cell(${i},${j})`;
         cellElement.addEventListener('click', function() {
             sendCmdToServer(cellElement.id);  //cell(i,j) 
@@ -25,26 +25,26 @@ function createMapRep(){
 }//createMapRep
 
 
-function updateCellColor(newX, newY, color) {
-    // Usiamo newX e newY nell'ordine corretto in cui sono stati creati (i, j)
-    const cellxy = document.getElementById(`cell(${newX},${newY})`);
-    
-    if (!cellxy) {
-        console.error("Cella non trovata:", newX, newY);
-        return;
+    function updateCellColor(newX, newY,color) {
+		console.log("updateCellColor cell-" + newX + "-" + newY + " to color " + color );
+        var cellxy = document.getElementById(`cell(${newX},${newY})`);
+	   console.log("updating  "  + cellxy.classList ); 
+      if( cellxy.classList.contains("live") ){
+        cellxy.classList.remove("live");
+		//if (color == undefined) {cellxy.classList.add("dead");} //just to check
+      }
+      else if( cellxy.classList.contains("dead") ){
+        cellxy.classList.remove("dead");
+		//if (color == undefined) {cellxy.classList.add("live");} //just to check
+      }
+      if (color == 1) {
+        cellxy.classList.add("live");
+      }else if (color == 0) {
+        cellxy.classList.add("dead");
+      }else //undefined
+	  cellxy.classList.add("dead");
+
     }
-
-    console.log("Updating cell", newX, newY, "to state", color);
-
-    // Rimuoviamo gli stati precedenti
-    cellxy.classList.remove("live", "dead");
-
-    if (color == "1") {
-        cellxy.classList.add("dead"); // Cella attiva
-    } else {
-        cellxy.classList.add("live"); // Cella vuota
-    }
-}
     
 console.log("iomap.js loaded " + map);    
 createMapRep()

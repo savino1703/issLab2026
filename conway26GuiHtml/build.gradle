@@ -13,7 +13,7 @@ java {
 
 repositories {
     mavenCentral()
-    //flatDir {   dirs './libs'    }
+    flatDir {   dirs './libs'    }
     flatDir {   dirs '../unibolibs'    } 
 }
 
@@ -29,18 +29,29 @@ dependencies {
     implementation name: 'unibo.basicomm23-1.0'
     
     /* conway ******************************* */
-    //implementation name: 'conway26Java-1.0'
+    implementation name: 'conway26Java-1.0'
 
     /* javalin ******************************* */
 	implementation 'io.javalin:javalin-bundle:6.1.3'
 }
 
 sourceSets {
-    //main.java.srcDirs += 'src'
-    main.java.srcDirs += 'src/main/java'
-    main.java.srcDirs += 'src/main/resources'
-    test.java.srcDirs += 'src/main/java/test'         //test is specific
-}
+main {
+        java {
+            // Rimuovi 'src' generico, usa i percorsi specifici
+            srcDirs = ['src/main/java'] 
+        }
+        resources {
+            // Qui dice a Gradle dove cercare i file statici (HTML, ecc.)
+            srcDirs = ['src/main/resources' ]
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java', 'src/main/java/test']
+        }
+    }
+  }
 
 eclipse {
     classpath {
@@ -49,15 +60,23 @@ eclipse {
 }
 
 application {
-    mainClass = 'conway26appl.MainConwayGui'
+    //Define the main class for the application.
+    mainClassName    = 'conwayGuiPageServer.MainConwayGui'
 }
 
 jar {
     println("building jar")
     from sourceSets.main.allSource
-    manifest {
-        attributes 'Main-Class': application.mainClass.get()
+    /*
+    from('./') {
+      include '*.pl'
+      include '*.json'
     }
+    */
+    manifest {
+        attributes 'Main-Class': "$mainClassName"
+    }
+    //Gestisci i file duplicati (evita errori di build)
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
  
