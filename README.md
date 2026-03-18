@@ -1,7 +1,7 @@
 # issLab2026
  Laboratorio di <b>Ingegneria dei Sistemi Software</b> a.a. 2025/2026 di Savino Paolo 0001241440
  
- link alle mie documentazioni: [vai al file index](https://github.com/savino1703/issLab2026/blob/main/docs/index.html)
+ link alle mie documentazioni: [vai al file index](https://github.com/savino1703/issLab2026/index.html)
 
  [Testo di riferimento:](https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf)
  <!-- comment: [ancora personalizzata] -->
