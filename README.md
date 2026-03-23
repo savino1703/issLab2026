@@ -10,12 +10,12 @@
 
  ### Sistema ConwayLife in locale
  [Riferimento: conway26Java Dai requisiti al deployment](https://anatali.github.io/issLab2026/Project%20conway26Java.html#conway26java-dai-requisiti-al-deployment)
- * [ConwayLife Sprint1](https://savino1703.github.io/issLab2026/sprint 1.html): impostazione di un primo prototipo
+ * [ConwayLife Sprint1](https://savino1703.github.io/issLab2026/sprint1.html): impostazione di un primo prototipo
    in Java con dispositivi Mock di I/O. <i>Distribuzione</i>: file jar.
- * [ConwayLife Sprint2](https://savino1703.github.io/issLab2026/sprint 2.html): <b>evoluzione</b> del primo prototipo
+ * [ConwayLife Sprint2](https://savino1703.github.io/issLab2026/sprint2.html): <b>evoluzione</b> del primo prototipo
    con un dispositivo di output realizzato in Swing. <i>Distribuzione</i>: file jar
  ### Sistemi come servizi
  * ...
  ### Sistema ConwayLife con pagine HTML
- * [ConwayLife Sprint3](https://savino1703.github.io/issLab2026/sprint 3.html): evoluzione del sistema in locale
+ * [ConwayLife Sprint3](https://savino1703.github.io/issLab2026/sprint3.html): evoluzione del sistema in locale
    usando una pagina HTML come dispositivo di I/O. <i>Distribuzione</i>: Docker yaml.
