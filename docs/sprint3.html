@@ -250,15 +250,15 @@ div.imagedesc{
 R1.  Realizzare una versione in Java del gioco Life di Conway. Dotare il gioco Life di una pagina HTML come dispositivo di I/O
 R2. la pagina deve costituire un componente esterno alla applicazione secondo la architettura riportata in IoJavalin
 esterno alla applicazione
-R3. il gestore del gioco sarà l’utente che ha aperto per primo (owner) una pagina HTML collegata al gioco. . In altre
+R3. fare in modo che life controller sia pilotato da una pagina html, il server deve fare da intermediario tra la pagina esterna e l'applicazione che si occupa della logica
+R4. il gestore del gioco sarà l’utente che ha aperto per primo (owner) una pagina HTML collegata al gioco. . In altre
 parole, solo la pagina dell’owner avrà pulsanti di comando START/STOP/CLEAN/EXIT attivi
-R4. la pagina HTML deve essere aggiornata in modo automatico man mano il gioco procede
-R5. un utente non owner che si collega mentre il gioco è in corso, dovrebbe vedere lo stato attuale della griglia in
+R5. la pagina HTML deve essere aggiornata in modo automatico man mano il gioco procede
+R6. un utente non owner che si collega mentre il gioco è in corso, dovrebbe vedere lo stato attuale della griglia in
 modo corretto
-R6. opzionalmente: la pagina HTML deve indicare se il gioco continua anche nel caso di griglia vuota o di config
+R7. opzionalmente: la pagina HTML deve indicare se il gioco continua anche nel caso di griglia vuota o di config
 urazione tabile
-R7. il deployment del gioco deve avvenire mediante Docker.
-
+R8. il deployment del gioco deve avvenire mediante Docker.
 </pre>
 
 <h2>Requirement analysis</h2>

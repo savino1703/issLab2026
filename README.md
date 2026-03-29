@@ -19,3 +19,8 @@
  ### Sistema ConwayLife con pagine HTML
  * [ConwayLife Sprint3](https://savino1703.github.io/issLab2026/sprint3.html): evoluzione del sistema in locale
    usando una pagina HTML come dispositivo di I/O. <i>Distribuzione</i>: Docker yaml.
+
+### Sistema Javalin
+ * [SistemSJavalin](https://savino1703.github.io/issLab2026/SistemSJavalin.html): Realizzazione di un servizio in Java che fa il calcolo dei valori di una espressione matematica, con deployment del servizio in docker usando il framework javalin.
+
+ * protoactor26 è simile al SistemSJavalin: [SistemSJavalin](https://savino1703.github.io/issLab2026/SistemSJavalin.html)
