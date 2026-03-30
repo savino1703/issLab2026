@@ -208,203 +208,108 @@ div.imagedesc{
 
    
 <title>Savino Paolo - Sprint3</title></head>
-    
-<!--
-	<body onload="loadNav();">
-		<div id="openButton" class="openButton" onclick="openNav(true)">&#9776; Menu</div>
-		<div id="sidenav" class="sidenav">
-			<a class="closeButton" href="javascript:void(0)" onclick="closeNav(true)">&times;</a>
-			<a href=".README.html">ReadMe</a>
-			<a class="sprint" href="../../../Sprint0/Codice/userDocs/Cold%20Storage%20Service%20-%20Natali%20V3.html">Sprint0</a>
-			<a class="sprint" href="../../../Sprint1.0/Codice/userDocs/Sprint%201.0%20-%20V3.html">Sprint1.0</a>
-			<a class="sprint" href="../../../Sprint1.1/Codice/userDocs/Sprint%201.1%20-%20V3.html">Sprint1.1</a>
-			<a id="currentSprint" class="sprint" href="#">&#8211;&#8212; Sprint2 &#8212;&#8211;</a>
-			<div class="sidenavSection">
-				<a href="#Goal Sprint 2">Goal Sprint 2</a>
-				<a href="#Requisiti">Requisiti</a>
-				<a href="#Analisi dei Requisiti">Analisi dei Requisiti</a>
-				<a href="#Analisi del Problema">Analisi del Problema</a>
-				<a href="#Test Plan">Test Plan</a>
-				<a href="#Progettazione">Progettazione</a>
-				<a href="#Deployment">Deployment</a>
-			</div>
-			<p class="separator">&mdash;&mdash;&mdash;&ndash;&ndash;&mdash;&mdash;&mdash;</p>
-			<a class="sprint" href="../../../Sprint3/Codice/userDoc/Sprint%203.html">Sprint3</a>
-			<bottom-spacer/>
-		</div>
--->
+
+
 <body>
-<div id="top">
-<h1>LABORATORIO DI INGEGNERIA DEI SISTEMI SOFTWARE <font size="5"></font> </h1>
-</div>  
+    <div id="top">
+        <h1>ConwayLife Sprint3</h1>
+    </div>
 
-<div class="body"> 
-<h2>Introduction</h2>
- <b>Goal</b>: Realizzazione in Java del
-<a href='https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.6'>GAME OF LIFE DI CONWAY</a>.
- 
-<h2>Requirements</h2>
+    <div class="body">
 
-<!-- <div class="remark"> -->
-<pre>
-R1.  Realizzare una versione in Java del gioco Life di Conway. Dotare il gioco Life di una pagina HTML come dispositivo di I/O
-R2. la pagina deve costituire un componente esterno alla applicazione secondo la architettura riportata in IoJavalin
-esterno alla applicazione
-R3. fare in modo che life controller sia pilotato da una pagina html, il server deve fare da intermediario tra la pagina esterna e l'applicazione che si occupa della logica
-R4. il gestore del gioco sarà l’utente che ha aperto per primo (owner) una pagina HTML collegata al gioco. . In altre
-parole, solo la pagina dell’owner avrà pulsanti di comando START/STOP/CLEAN/EXIT attivi
-R5. la pagina HTML deve essere aggiornata in modo automatico man mano il gioco procede
-R6. un utente non owner che si collega mentre il gioco è in corso, dovrebbe vedere lo stato attuale della griglia in
-modo corretto
-R7. opzionalmente: la pagina HTML deve indicare se il gioco continua anche nel caso di griglia vuota o di config
-urazione tabile
-R8. il deployment del gioco deve avvenire mediante Docker.
-</pre>
+        <h2>Introduction</h2>
+        <b>Goal</b>: Realizzazione in Java del
+        <a href="https://anatali.github.io/issLab2026/_static/docs/Protobook.pdf#chapter.6">GAME OF LIFE DI CONWAY</a>
 
-<h2>Requirement analysis</h2>
+        <h2>Requirements</h2>
 
-<pre>	
-Cosa intende il committente con la parola Cella?
-public interface ICell {
-	void setStatus(boolean v); // Qualunque cosa sia una cella, esiste solo la rappresentazione della cella
-	boolean isAlive(); // La cella come entità ha la capacità di rispondere ad una query, che mi restituisce un valore, ossia vivo o morto.
-	void switchCellState(); // La cella è un ente che ha la capacità di, attraverso questo metodo, cambiare stato.
-}
+        <pre style="flex: 1; margin: 0; padding: 10px; background-color: #f4f4f4; border: 1px solid #ddd;">
+R1 Il gioco Life deve disporre di una pagina HTML come dispositivo di I/O
 
-Cosa intende il committente con la parola Griglia?
-public interface IGrid {
-	  public int getRowsNum(); //Per implementare getRowsNum devo conoscere com'è fatta internamente la griglia, ossia è primitiva.
-	  public int getColsNum();
-	  public void setCellValue(int x, int y, boolean state); // Non è un metodo indispensabile, ma è molto comodo avere un metodo che mi permette di modificare lo stato di una cella.
-	  public ICell getCell(int x, int y); // è indispensabile avere un metodo che mi restituisce una cella.
-	  public boolean getCellValue(int x, int y);
-	  public void reset(); //Non è indispensabile, ma può essere opportuno avere un metodo che resetta gli stati dei componenti della griglia, ossia le celle a un valore default, ad esempio tutte le celle morte.
-}
+R2 La pagina deve costituire un componente esterno all'applicazione con un'architettura IoJavalin
+   esterna all'applicazione
 
-Test plan 1:
+R3 Il gestore del gioco sarà l'utente che ha aperto per primo una pagina HTML collegata al gioco:
+   solo la pagina dell'owner avrà pulsanti di comando START/STOP/CLEAN/EXIT attivi
 
-public class CellTest {
-private ICell c;
+R4 La pagina HTML deve essere aggiornata in modo automatico man mano che il gioco procede
 
-	@Before
-	public void setup() {
-		System.out.println("ConwayLifeTest | setup");	
-	    c = new Cell();
-	}
-	@After
-	public void down() {
-		System.out.println("ConwayLifeTest | down");
-	}
-	
-	@Test
-	public void testCellAlive() {
-		System.out.println("ConwayLifeTest | doing alive");
-		c.setStatus(true);
-		boolean r = c.isAlive();
-		assertTrue(r);
-		
-	}
-	
-	@Test
-	public void testCellDead() {
-		System.out.println("ConwayLifeTest | doing dead");
-		c.setStatus(false);
-		boolean r = c.isAlive();
-		assertTrue( !r);
-	}	
-}
+R5 Un utente non owner che si collega mentre il gioco è in corso dovrebbe vedere lo stato attuale
+   della griglia in modo corretto
 
-Test plan 2:
+R6 Opzionalmente: la pagina HTML deve indicare se il gioco continua anche nel caso di griglia vuota
+   o di configurazione stabile
 
-public class GridTest {
-	private static final int nRows=5;
-	private static final int nCols=5;
-	
-private Grid grid;
-
-	@Before
-	public void setup() {
-		System.out.println("GridTest | setup");	
-		grid= new Grid(nRows,nCols);
-	}
-	@After
-	public void down() {
-		System.out.println("GridTest | down");
-	}
-	
-	@Test
-	public void testDims() {
-		System.out.println("testDims ---------------------" );
-		int nr = grid.getRowsNum();
-		int nc = grid.getColsNum();
-		assertTrue( nr==nRows && nc==nCols );
-	}
-	@Test
-	public void testCGridCellValue() {
-		System.out.println("testCGridCellValue ---------------------" );
-		grid.setCellValue(0,0,true);
-		assertTrue(   grid.getCellValue(0,0) );
-		assertFalse(  grid.getCellValue(0,1) );
-	}
-	@Test
-	public void testGridRep() {
-		System.out.println("testGridRep ---------------------" );
- 		System.out.println(""+grid);
-		assertTrue( grid.toString().startsWith(". . . . ."));
-	}
-	@Test
-	public void testPrintGrid() {
-		System.out.println("testPrintGrid ---------------------" );
-		grid.setCellValue(0,0,true);
-		grid.setCellValue(0,1,true);
-		grid.setCellValue(0,2,true);
-		grid.setCellValue(0,3,true);
-		grid.setCellValue(0,4,true);
-		//grid.printGrid();
-	}
-}
+R7 Il deployment del gioco deve avvenire mediante Docker
 
 </pre>
+        <h2>Requirement analysis</h2>
 
-<h2>Problem analysis</h2>
-<img src="img/sprint3.png" alt="id_img" width="40%" height="40%">
+        <p>L'interfaccia IOutDev per la visualizzazione dello stato di una Cell e/o di tutta la Grid è definita come
+            segue:</p>
 
-<h2>Test plans</h2> 
-<pre>
+        <div style="display: flex; align-items: flex-start; gap: 20px; margin-top: 10px;">
 
-</pre>
+            <pre style="flex: 1; margin: 0; padding: 10px; background-color: #f4f4f4; border: 1px solid #ddd;"><code>public interface IOutDev {
+    void display(String msg);   <span class="comment">//For HMI</span> 
+    void displayCell(Cell cell, Grid grid);
+    void displayGrid(Grid grid);
+    void close();
+}</code></pre>
+
+            <div style="flex: 1; display: flex; justify-content: flex-end;">
+                <img src="img/requirement analysis3.png" alt="Requirement Analysis" style="width: 100%; max-width: 400px; display: block; margin: 0;">
+            </div>
+
+        </div>
 
 
-<h2>Project</h2> 
- 
- 
 
-<h2>Testing</h2> 
- 
+        <p>Dall'analisi dei requisiti emergono i seguenti punti chiave:</p>
+        <ul>
+            <li><strong>Componente Esterno (R1, R2)</strong>: L'interfaccia non è parte integrante della logica ma
+                un'entità disaccoppiata che comunica tramite il framework Javalin.</li>
+            <li><strong>Ruoli Utente (R3, R5)</strong>: Il sistema deve gestire la distinzione tra <i>Owner</i> (primo
+                connesso con privilegi di comando) e <i>Guest</i> (utenti successivi con sola visualizzazione).</li>
+            <li><strong>Aggiornamento Dinamico (R4, R6)</strong>: La pagina deve riflettere lo stato della griglia in
+                tempo reale senza ricaricamento manuale, segnalando anche eventuali stati di terminazione (griglia vuota
+                o stabile).</li>
+            <li><strong>Containerizzazione (R7)</strong>: L'intero sistema deve essere distribuibile tramite
+                Docker per garantirne la portabilità.</li>
+        </ul>
 
-<h2>Deployment</h2> 
 
- 
-<h2>Maintenance</h2> 
- 
-<!-- USEFUL
-<table style="width:100%" border="1">
-<tr>
-<td style="width:50%">
-</td>
-<td></td>
-</tr>
-</table>
--->
-	      	
-<br/><br/> 	
-</div>  
 
-<div style="background-color:rgba(86, 56, 253, 0.9); width:80%;text-align:left;color:white">
+        <h2>Problem analysis</h2>
+
+        <p>L'architettura logica del sistema si presenta in questo modo:</p>
+
+        <div>
+            <img src="img/problem analysis3.png" alt="Problem Analysis" width="80%" height="80%">
+        </div>
+
+
+        <h2>Test plans</h2>
+
+        <h2>Project</h2>
+
+        <h2>Testing</h2>
+
+        <h2>Deployment</h2>
+
+        Il sistema è distribuito tramite Docker
+
+        <h2>Maintenance</h2>
+
+        <br><br>
+    </div>
+
+   <div style="background-color:rgba(86, 56, 253, 0.9); width:80%;text-align:left;color:white">
 By Paolo Savino email: paolo.savino2@studio.unibo.it, 
 <!-- <img src="./img/mbot-S.jpg" alt="mbot" width="30%" height="15%"> -->
 <img src="img/paolo.JPG" alt="paolo" width="20%" height="20%">
 GIT repo: https://github.com/savino1703/issLab2026
 </div> 
-</body>
-</html>
+
+
+</body></html>
