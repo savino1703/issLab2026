@@ -1,0 +1,49 @@
+<html>
+<head>
+    <title>Client WebSocket Javalin</title>
+</head>
+<body>
+<h2>Client WebSocket</h2>
+<pre id="log" style="background:#eee; padding:10px; height:300px; overflow:auto;"></pre>
+
+<script>
+// ---- Funzione di log ----
+function log(msg) {
+    const pre = document.getElementById("log");
+    pre.textContent += msg + "\n";
+    pre.scrollTop = pre.scrollHeight;
+}
+
+// ---- Messaggi da inviare ----
+const messages = [
+    '{"msgId":"eval","msgType":"request","msgSender":"clientHtml","msgReceiver":"sistemaS","msgContent":"5.0","msgNum":"0"}',
+    '{"msgId":"eval","msgType":"request","msgSender":"clientHtml","msgReceiver":"sistemaS","msgContent":"3.0","msgNum":"1"}'
+];
+
+// ---- Connessione WebSocket ----
+const socketWS = new WebSocket("ws://localhost:8050/eval");
+
+socketWS.onopen = () => {
+    log("WS connesso a /eval");
+
+    // Invio tutti i messaggi
+    messages.forEach(msg => {
+        log("Invio: " + msg);
+        socketWS.send(msg);
+    });
+};
+
+socketWS.onmessage = (event) => {
+    log("Messaggio ricevuto: " + event.data);
+};
+
+socketWS.onclose = (event) => {
+    log(`Connessione chiusa. Code: ${event.code}, Reason: ${event.reason}`);
+};
+
+socketWS.onerror = (err) => {
+    log("Errore WebSocket: " + err);
+};
+</script>
+</body>
+</html>
