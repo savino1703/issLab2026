@@ -1,0 +1,78 @@
+System sistemasqak
+/*
+ * sistemas : un servizio che valuta il valore di una funzione
+ * un servizio è un programma con cui posso parlare: trasmettere con un protocollo di comunicazione 
+ * 													 un'informazione che potrà essere elaborata, senza 
+ * 													 preoccuparmi di conoscere l'entità con cui parlo, 
+ * 													 ma solo di come comunicarci.
+ */
+
+Dispatch eval : arg(V)
+Request evalr : argr(V)
+Reply evalreply: value(V) for evalr
+/*
+ * parlo col servizio in modalità fire and forget, eval rappresenta l'identificatore del msg e arg(V) il payload
+ * non mi interessa il protocollo, è gestito da QAK, voglio capire la logica di comunicazione
+ */
+
+Context ctxsistemas ip [ host="localhost" port=8010 ]
+QActor sistemas context ctxsistemas {
+	
+	State s0 initial{
+		println("Hello world") color blue
+		println("result=$V") color blue
+		println("now I'm waiting for a dispatch")
+	}
+	Transition t0
+ 		whenMsg eval -> handleEval 
+ 		whenRequest evalr -> handleRequest
+ 		
+	State handleEval{
+	  printCurrentMessage color green
+	  println("$name | msg=$currentMsg") color magenta
+	  
+	  onMsg( eval : arg(X) ){
+	  	[# val VasString = payloadArg(0)
+	  	   val V = VasString.toDouble()
+	     #]
+	  	println("$name | evaluate $V") color green
+	  	[# val R = eval(V) #]
+	  	println("$name | result=$R") color green
+	  }
+    }
+    
+    State handleRequest{
+    	printCurrentMessage color green
+    	onMsg( eval : arg(X) ){
+    		[# val VasString = payloadArg(0)
+    		   val V = VasString.toDouble()
+    		#]
+    		println("$name | evaluate $V") color green
+    		[# val R = eval(V) #]
+    		println("$name | result=$R") color blue
+    	}
+    	replyTo evalr with evalreply : value($V)
+    	println("$name | handleRequest ends") color blue
+    }
+    
+    State handleReply{
+	  printCurrentMessage color magenta
+	  onMsg ( evalreply: value(x) ){
+	  	[# val VasString = payloadArg(0) #]
+	  	println("$name | result received=$VasString") color magenta
+	  	}
+	  }
+    
+}
+
+   
+
+QActor callermock context ctxsistemas {
+	State s0 initial{		
+		println("$name | start") color green
+		[# var V = "2.0" #]
+		forward sistemas -m eval : arg("2.0")
+		request sistemas -m evalr : argr("2.0")	
+	}
+}
+
