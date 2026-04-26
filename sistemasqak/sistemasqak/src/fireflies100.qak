@@ -1,0 +1,69 @@
+System sistemasqak 
+
+// Evento emesso nell'ambiente quando una lucciola lampeggia
+Event flash : flash(SOURCE)
+
+Context ctxfireflies ip [host="localhost" port=8014]
+
+/* * COORDINATORE: Crea le 100 lucciole all'avvio
+ */
+QActor coordinator context ctxfireflies {
+	State s0 initial {
+		println("COORDINATOR | Inizio creazione 100 lucciole...") color red
+		[# 
+			for(i in 1..100){
+				// Crea un attore di tipo 'firefly' con nome univoco
+				it.unibo.kactor.ActorBasicFsm.create(
+					"firefly_$i", 
+					"it.unibo.firefly.Firefly", 
+					context!!
+				)
+			}
+		#]
+		println("COORDINATOR | Tutte le lucciole sono nate.") color red
+	}
+}
+
+/* * MODELLO FIREFLY: Tutte le lucciole seguono questo comportamento
+ */
+QActor firefly context ctxfireflies {
+    [# 
+        var Count = 0 
+        var MyDelay = 2000L
+    #]
+    
+    State s0 initial {
+        // Ognuna parte con un offset casuale per non essere sincronizzate all'inizio
+        [# MyDelay = (500..3000).random().toLong() #]
+    }
+    Goto wait
+    
+    State wait {
+    	// La lucciola aspetta il suo momento per lampeggiare
+    }
+    Transition t0 
+        whenTimeVar MyDelay -> blink
+        whenEvent flash     -> handleExternalFlash
+        
+    State blink {
+        [# 
+        	Count++ 
+        	MyDelay = 2000L // Dopo il flash, resetta il ritmo naturale a 2sec
+        #]
+        // Stampiamo solo ogni 10 flash per non intasare la console di Eclipse
+        [# if(Count % 10 == 0) #] println("$name | FLASH numero $Count!") color blue
+        	[# val MyName = name #]
+			emit flash : flash($MyName)
+    }
+    Goto wait
+
+    State handleExternalFlash {
+        /* * LOGICA DI SINCRONIZZAZIONE:
+         * Se sento un flash esterno mentre sto aspettando, 
+         * accelero il mio timer interno del 10%.
+         */
+        [# MyDelay = (MyDelay * 0.9).toLong() #]
+        // println("$name | ho visto un lampo! Accelero a $MyDelay")
+    }
+    Goto wait
+}

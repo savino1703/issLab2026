@@ -1,23 +1,33 @@
-System firefly
-// Messaggio che la lucciola invia a se stessa o ad altri
-Dispatch flash : flash(N)
+System sistemasqak
 
-Context ctxfirefly ip [host="localhost" port=8012]
+Event flash : flash(SOURCE)
 
-QActor firefly context ctxfirefly {
-	[# var Count = 0 #] // Variabile Kotlin per contare i lampi
-	
+Context ctxfireflies ip [host="localhost" port=8012]
+
+QActor coordinator context ctxfireflies {
 	State s0 initial {
-		println("now I'm waiting") color blue
-		delay 1000 // Aspetta un secondo prima di iniziare
+		println("COORDINATOR START") color red
+		[# 
+			for(i in 1..5){ // Prova con 5 all'inizio per testare
+				it.unibo.kactor.ActorBasicFsm.create(
+					"firefly$i", 
+					"it.unibo.firefly.Firefly", 
+					context!!
+				)
+			}
+		#]
+	}
+}
+
+QActor firefly context ctxfireflies {
+	State s0 initial {
+		println("FIREFLY READY")
 	}
 	Goto blink
 	
 	State blink {
-		[# Count++ #]
-		println("Firefly | FLASH numero $Count!")
-		// Qui la lucciola fa qualcosa, ad esempio emette un segnale
+		emit flash : flash(firefly)
+		delay 2000
 	}
-	Transition t0 
-		whenTime 2000 -> blink // Ripete il lampo ogni 2 secondi
+	Goto blink
 }

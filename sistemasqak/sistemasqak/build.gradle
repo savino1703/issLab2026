@@ -1,8 +1,3 @@
-/*
-================================================================================
-build.gradle per Firefly System
-================================================================================
-*/
 plugins {
     id 'application'
     id 'java'
@@ -12,17 +7,14 @@ plugins {
 
 version '1.0'
 
-// Definizione esplicita della versione per le coroutine
-ext.kotlinVersion = '1.9.22'
-
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
 kotlin {
-  jvmToolchain {
-    languageVersion.set(JavaLanguageVersion.of("17"))
-  }
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of("17"))
+    }
 }
 
 repositories {
@@ -31,52 +23,53 @@ repositories {
 }
 
 dependencies {
-    // Kotlin BOM per allineare le versioni
+    // Kotlin & Coroutines
     implementation platform('org.jetbrains.kotlin:kotlin-bom')
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-
-    // Coroutines (Risolto il problema del $kotlinVersion)
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.7.3"
 
-    // Librerie QAK e Utility UNIBO (Cercate in ../unibolibs)
+    // Librerie QAK (Assicurati che ../unibolibs sia il percorso corretto)
     implementation name: 'uniboInterfaces'
     implementation name: '2p301'
     implementation name: 'unibo.qakactor23-5.0'
     implementation name: 'unibo.basicomm23-1.0'
 
+    // JSON & Utilities
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+    implementation 'org.json:json:20180130'
+    
     // Messaggistica e Protocolli
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
     implementation 'org.eclipse.californium:californium-core:3.5.0'
-    implementation 'org.json:json:20180130'
-    implementation 'ch.qos.logback:logback-classic:1.2.11'
     implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation 'ch.qos.logback:logback-classic:1.2.11'
 }
 
 sourceSets {
     main {
         java {
             srcDir 'src'
-            srcDir 'src-gen' // Aggiunto per sicurezza se QAK genera qui
+            srcDir 'src-gen'
             srcDir 'utils'
         }
     }
 }
 
 application {
-    // IMPOSTATO SULLA LUCCIOLA
-    mainClassName = 'it.unibo.ctxfirefly.MainCtxfireflyKt'
+    // Deve corrispondere al Context del file .qak (porta 8014)
+    mainClass.set('it.unibo.ctxfireflies.MainCtxfirefliesKt')
 }
 
-// Forza Gradle a ignorare duplicati nelle risorse (comune con Logback)
+// Forza Gradle a ignorare duplicati nelle risorse
 tasks.withType(Copy).configureEach {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-// Task per avvio rapido da Gradle
+// Task per avvio rapido (uso: gradlew runFirefly)
 task runFirefly(type: JavaExec) {
     group = "Execution"
-    description = "Avvia il sistema Firefly"
+    description = "Avvia lo sciame di 100 lucciole sulla porta 8014"
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'it.unibo.ctxfirefly.MainCtxfireflyKt'
+    mainClass.set('it.unibo.ctxfireflies.MainCtxfirefliesKt')
 }

@@ -154,9 +154,9 @@ task dovesiamo {
 
 distributions {
     main {
-        distributionBaseName = 'firefly'
+        distributionBaseName = 'sistemasqak'
         contents { 
-             from './firefly.pl'
+             from './sistemasqak.pl'
              from './sysRules.pl'
              from './facadeConfig.json'
         }
