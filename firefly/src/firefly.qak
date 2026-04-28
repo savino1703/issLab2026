@@ -1,0 +1,71 @@
+System firefly
+
+Dispatch cellstate : cellstate(X,Y,COLOR)	"da firefly1 a griddisplaymock"
+
+Context ctxfirefly ip [host="localhost" port=8080]
+Context ctxgrid    ip [host="127.0.0.1" port=8050]
+
+ExternalQActor griddisplay context ctxgrid
+
+QActor firefly context ctxfirefly {
+
+	[#
+		var X = 9
+		var Y = 12
+	#]
+
+
+	State s0 initial {
+		println("LUCCIOLA READY") color cyan
+	}
+	Goto flash // manda un evento locale
+
+
+	State flash {
+		printCurrentMessage
+
+		[# var Timer = java.util.Random().nextLong(500L, 1000L) #]
+		delayVar Timer // fermare l'esecuzione per i secondi random ottenuti prima
+		forward griddisplay -m cellstate : cellstate($X,$Y,1)
+		delayVar Timer // fermare l'esecuzione per i secondi random ottenuti prima
+
+		forward griddisplay -m cellstate : cellstate($X,$Y,0)
+	}
+
+
+	Transition t0
+		whenTime 500 -> flash
+
+}
+
+
+/*
+QActor griddisplaymock context ctxfirefly {
+
+	State s0 initial {	
+		println("GRID DISPLAY READY")
+	}
+	Goto waitCmd
+
+	
+	State waitCmd{
+		println("$name | waiting ..." )
+	}
+	
+	Transition t0
+		whenMsg cellstate -> display
+
+
+	State display{
+		onMsg( cellstate : cellstate(X,Y,COLOR) ){
+
+			[# var X = payloadArg(0) #]
+			[# var Y = payloadArg(1) #]
+			[# var COLOR = payloadArg(2) #]
+
+			println("$name | update cell $X,$Y with color $COLOR)")
+		}
+	}
+	Goto waitCmd
+}
+ */
