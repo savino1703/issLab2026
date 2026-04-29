@@ -24,3 +24,7 @@
  * [SistemSJavalin](https://savino1703.github.io/issLab2026/SistemSJavalin.html): Realizzazione di un servizio in Java che fa il calcolo dei valori di una espressione matematica, con deployment del servizio in docker usando il framework javalin.
 
  * protoactor26 è simile al SistemSJavalin: [SistemSJavalin](https://savino1703.github.io/issLab2026/SistemSJavalin.html)
+
+### Sistema QActors
+ 
+ * [Firefly](https://savino1703.github.io/issLab2026/documento_firefly3sync.html):  Realizzazione di un simulatore di un sistema  costituito da 3 lucciole che si accendono e spengono in modo sincronizzato

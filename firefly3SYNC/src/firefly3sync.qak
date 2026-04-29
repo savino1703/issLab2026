@@ -1,0 +1,100 @@
+System firefly
+
+Dispatch cellstate : cellstate(X,Y,COLOR)     "commute cell state"
+Event    sync      : sync(V)                  "evento di sincronizzazione globale"
+
+Context ctxfirefly ip [ host="localhost" port=8040 ]
+Context ctxgrid    ip [ host="127.0.0.1" port=8050 ]
+
+ExternalQActor griddisplay context ctxgrid
+
+
+QActor coordinator context ctxfirefly {
+	State s0 initial {
+		println("Coordinator | Aspetto 5 secondi prima di iniziare...") color green
+		delay 5000
+	}
+	Goto loop
+
+	State loop {
+		println("Coordinator | SYNC!") color green
+		emit sync : sync(1)
+		delay 1500
+	}
+	Goto loop
+}
+
+
+QActor firefly1 context ctxfirefly {
+	[#
+	   var X = 10
+	   var Y = 10
+	#]
+	State s0 initial {
+		println("$name | X=$X Y=$Y") color magenta
+	}
+	Goto wait_sync
+
+	State wait_sync {
+		println("$name | aspetto sync...") color magenta
+	}
+	Transition t0
+		whenEvent sync -> flash
+
+	State flash {
+		forward griddisplay -m cellstate : cellstate($X,$Y,1)
+		delay 500
+		forward griddisplay -m cellstate : cellstate($X,$Y,0)
+	}
+	Goto wait_sync
+}
+
+
+QActor firefly2 context ctxfirefly {
+	[#
+	   var X = 5
+	   var Y = 5
+	#]
+	State s0 initial {
+		println("$name | X=$X Y=$Y") color blue
+	}
+	Goto wait_sync
+
+	State wait_sync {
+		println("$name | aspetto sync...") color blue
+	}
+	Transition t0
+		whenEvent sync -> flash
+
+	State flash {
+		forward griddisplay -m cellstate : cellstate($X,$Y,1)
+		delay 500
+		forward griddisplay -m cellstate : cellstate($X,$Y,0)
+	}
+	Goto wait_sync
+}
+
+
+QActor firefly3 context ctxfirefly {
+	[#
+	   var X = 2
+	   var Y = 2
+	#]
+	State s0 initial {
+		println("$name | X=$X Y=$Y") color blue
+	}
+	Goto wait_sync
+
+	State wait_sync {
+		println("$name | aspetto sync...") color blue
+	}
+	Transition t0
+		whenEvent sync -> flash
+
+	State flash {
+		forward griddisplay -m cellstate : cellstate($X,$Y,1)
+		delay 500
+		forward griddisplay -m cellstate : cellstate($X,$Y,0)
+	}
+	Goto wait_sync
+}
