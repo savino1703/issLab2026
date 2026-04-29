@@ -10,26 +10,17 @@
         h2 { background-color: #9ed8ff; font-size: 140%; padding: 10px; border-radius: 8px; margin-top: 1.5em; color: #242424; }
         h3 { background-color: #e6ccff; font-size: 110%; padding: 8px; border-radius: 6px; }
         
-        /* Blocchi speciali richiesti */
         div.req { background-color: #d9ffb3; border: 2px solid #4CAF50; padding: 20px; margin: 15px 0; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
         div.remark { background-color: #E3F2FD; border: 1.5px solid #BBDEFB; padding: 15px; margin: 10px 0; border-radius: 15px; font-style: italic; }
         
-        /* Codice */
         pre { font-family: "Consolas", monospace; font-size: 90%; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-left: 5px solid #7a94ff; overflow-x: auto; margin: 10px 0; }
         code { color: #d63384; font-weight: bold; }
         
-        /* Tabelle */
-        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        th { background-color: #f2f2f2; }
-        
-        /* Elementi QAK Style */
         ks { color: #0000CD; font-weight: bold; } /* Keywords */
         kc { color: #008000; font-weight: bold; } /* Comments/Controls */
         k  { color: #990000; font-weight: bold; } /* Actors */
         
         .footer-custom { background-color: #5638fd; color: white; padding: 20px; border-radius: 10px; margin-top: 30px; display: flex; align-items: center; justify-content: space-between; }
-        .footer-img { border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3); }
-        
         ul { list-style-type: square; margin-left: 30px; }
         li { margin-bottom: 8px; }
     </style>
@@ -44,71 +35,69 @@
 
     <main>
         <section>
-            <h2>Introduction</h2>
-            <div class="remark">
-                Realizzazione di un simulatore di un sistema costituito da <b>3 lucciole</b>. 
-                Il comportamento evolve in due fasi:
+            <h2>Requisiti</h2>
+            <div class="req">
+                Realizzazione di un simulatore di un sistema (denominato <b>firefly3SYNC</b>) costituito da 3 lucciole. 
+                Il comportamento deve evolvere in due fasi:
                 <ol>
                     <li>Primi 10 secondi: lampeggio a frequenza costante propria (asincrono).</li>
                     <li>Successivamente: lampeggio in maniera <b>sincrona</b>.</li>
                 </ol>
+                È richiesta la definizione di un modello <b>QAK</b> che simuli accuratamente il ciclo di vita e la sincronizzazione degli attori.
             </div>
         </section>
 
         <section>
-            <h2>Requirements</h2>
-            <div class="req">
-                Definire un modello <b>QAK</b> di un sistema <i>firefly</i> che simuli accuratamente il ciclo di vita e la sincronizzazione di tre attori lucciola.
-            </div>
-        </section>
-
-        <section>
-            <h2>Requirement Analysis</h2>
+            <h2>Analisi dei Requisiti</h2>
             <ul>
-                <li><strong>Identità:</strong> Il sistema si chiama <ks>firefly3SYNC</ks>.</li>
-                <li><strong>Comportamento Asincrono:</strong> Nei primi 10s, ogni <k>firefly</k> (attore) lampeggia con un timer interno indipendente.</li>
-                <li><strong>Sincronizzazione:</strong> Dopo la fase iniziale, gli attori devono allineare i propri cicli di accensione.</li>
+                <li><strong>Identità:</strong> Il sistema è un'astrazione di attori interagenti.</li>
+                <li><strong>Lucciola (Firefly):</strong> Un attore capace di emettere segnali visivi (ON/OFF) e di ricevere stimoli esterni.</li>
+                <li><strong>Fase Asincrona:</strong> Ogni attore deve possedere un meccanismo di timing interno indipendente.</li>
+                <li><strong>Fase Sincrona:</strong> Gli attori devono allineare i propri cicli di accensione eliminando i drift temporali.</li>
+                <li><strong>Osservabilità:</strong> Necessità di un display esterno per verificare lo stato della simulazione.</li>
             </ul>
-            
-            <pre>
-<ks>System</ks> firefly
-<ks>Context</ks> ctxfirefly ip [ host="localhost" port=8040 ]
-
-<ks>QActor</ks> firefly1 <ks>context</ks> ctxfirefly {
-    <ks>State</ks> s0 <ks>initial</ks> {
-        <kc>// Setup parametri di lampeggio iniziale</kc>
-    }
-}</pre>
         </section>
 
         <section>
-            <h2>Problem Analysis</h2>
-            <p>Il cuore del problema è la gestione del tempo. Abbiamo modellato il ciclo come un'alternanza di stati:</p>
+            <h2>Analisi del Problema</h2>
+            <h3>Architettura del Sistema</h3>
+            <p>Il sistema è logicamente diviso in due contesti distribuiti:</p>
+            <ul>
+                <li><ks>ctxfirefly</ks> (localhost:8040): contiene la logica di controllo (coordinatore e lucciole).</li>
+                <li><ks>ctxgrid</ks> (127.0.0.1:8050): contiene l'attore esterno <k>griddisplay</k> per la visualizzazione.</li>
+            </ul>
+
+            <h3>Il problema della sincronizzazione</h3>
+            <p>Se ogni lucciola utilizzasse un timer locale (es. <code>whenTime</code>), piccole differenze di scheduling del sistema operativo causerebbero sfasamenti che si accumulano nel tempo. 
+            Il <b>core problem</b> è che non esiste un meccanismo intrinseco negli attori indipendenti per rimettersi in fase.</p>
             
-            <pre>
-<ks>State</ks> flash {
-    [# Timer = java.util.Random().nextLong(500L, 1000L) #]
-    <kc>// Turn On</kc>
-    <ks>println</ks>("<k>$name</k> | turnOn $Timer")
-    <ks>delayVar</ks> Timer
-    <kc>// Turn Off</kc>
-    <ks>println</ks>("<k>$name</k> | turnOff $Timer")
-}</pre>
-
-            <p>La ripetizione è garantita da una transizione ricorsiva temporizzata:</p>
-            <pre>
-<ks>Transition</ks> t0 <ks>whenTime</ks> 500 -> flash</pre>
-        </section>
-
-        <section>
-            <h2>Project & Design</h2>
             <div class="remark">
-                <b>Miglioramento della visibilità:</b> Per monitorare lo stato abbiamo introdotto l'attore <k>griddisplay</k>.
+                <b>Decisione Analitica:</b> Per garantire la sincronia perfetta, è necessario passare da un modello a "timer distribuiti" a un modello a "clock centralizzato".
             </div>
-            
-            <p>Le lucciole ora sono <b>reattive</b>: non decidono autonomamente ma attendono un segnale globale di sincronizzazione.</p>
+        </section>
 
-            <h3>Attore Firefly (Reattivo)</h3>
+        <section>
+            <h2>Progetto</h2>
+            <h3>Il Coordinator come Direttore d'Orchestra</h3>
+            <p>La scelta progettuale chiave è l'introduzione di un unico attore centralizzato, il <k>coordinator</k>, che scandisce il tempo tramite <b>Eventi Broadcast</b>.</p>
+            
+            <pre>
+<ks>QActor</ks> coordinator <ks>context</ks> ctxfirefly {
+    <ks>State</ks> s0 <ks>initial</ks> {
+        <ks>delay</ks> 10000 <kc>// 10 secondi di fase asincrona iniziale</kc>
+    }
+    <ks>Goto</ks> loop
+
+    <ks>State</ks> loop {
+        <ks>emit</ks> sync : sync(1) <kc>// Segnale simultaneo per tutti</ks>
+        <ks>delay</ks> 1500
+    }
+    <ks>Goto</ks> loop
+}</pre>
+
+            <h3>Firefly: Attori Puramente Reattivi</h3>
+            <p>Le lucciole vengono modellate come entità prive di stato temporale proprio nella fase di regime, rendendole dipendenti dal segnale <ks>sync</ks>.</p>
+            
             <pre>
 <ks>State</ks> wait_sync { }
 <ks>Transition</ks> t0 <ks>whenEvent</ks> sync -> flash
@@ -120,24 +109,17 @@
 }
 <ks>Goto</ks> wait_sync</pre>
 
-            <h3>Attore Coordinator (Master Clock)</h3>
-            <p>Il <k>coordinator</k> emette un <b>Event</b> (broadcast), garantendo che tutte le lucciole scattino nello stesso istante logico.</p>
-            <pre>
-<ks>State</ks> loop {
-    <ks>emit</ks> sync : sync(1)
-    <ks>delay</ks> 1500
-}
-<ks>Goto</ks> loop</pre>
-        </section>
-
-        <section>
-            <h2>Maintenance</h2>
-            <p>Il sistema è estensibile: per aggiungere lucciole è sufficiente aumentare il numero di attori nel modello QAK e mapparli sulla griglia del <i>griddisplay</i>.</p>
+            <h3>Vantaggi della soluzione</h3>
+            <ul>
+                <li><strong>Precisione:</strong> Tutte le lucciole ricevono l'evento nello stesso istante logico.</li>
+                <li><strong>Scalabilità:</strong> Il <k>coordinator</k> emette un singolo segnale senza dover conoscere il numero o l'identità dei destinatari. Aggiungere lucciole non richiede modifiche al codice del coordinatore.</li>
+                <li><strong>Separazione delle responsabilità:</strong> La comunicazione verso il display rimane punto-punto (dispatch), mentre la sincronizzazione usa il broadcast.</li>
+            </ul>
         </section>
     </main>
 
     <footer>
-        <div style="background-color:rgba(86, 56, 253, 0.9); width:80%;text-align:left;color:white">
+       <div style="background-color:rgba(86, 56, 253, 0.9); width:80%;text-align:left;color:white">
 By Paolo Savino email: paolo.savino2@studio.unibo.it, 
 <!-- <img src="./img/mbot-S.jpg" alt="mbot" width="30%" height="15%"> -->
 <img src="img/paolo.JPG" alt="paolo" width="20%" height="20%">
