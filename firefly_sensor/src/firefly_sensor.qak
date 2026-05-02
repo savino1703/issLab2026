@@ -1,0 +1,180 @@
+System firefly_sensor
+
+// Messaggi per il display
+Dispatch cellstate : cellstate(X,Y,COLOR)
+
+// Eventi
+Event sonar_data : distance(D)           "Distanza rilevata dal sonar"
+Event startSync  : startSync(1)          "Passa a modalità sincrona"
+Event stopSync   : stopSync(1)           "Torna a modalità random"
+Event sync       : sync(1)               "Segnale di clock globale"
+
+Context ctxfirefly ip [ host="localhost" port=8040 ]
+Context ctxgrid    ip [ host="127.0.0.1" port=8050 ]
+
+ExternalQActor griddisplay context ctxgrid
+
+/* 
+ * SONAR SIMULATOR (Mock)
+ * Questo attore simula il sensore fisico per il test
+ */
+QActor sonarsimulator context ctxfirefly {
+	State s0 initial {
+		println("SonarSimulator | Inizio simulazione...") color black
+		delay 5000
+		// 1. Ostacolo vicino
+		println("SonarSimulator | Ostacolo VICINO (15cm)") color black
+		emit sonar_data : distance(15)
+		delay 15000
+		// 2. Ostacolo lontano
+		println("SonarSimulator | Ostacolo LONTANO (80cm)") color black
+		emit sonar_data : distance(80)
+		delay 10000
+		// 3. Di nuovo vicino
+		println("SonarSimulator | Ostacolo VICINO (10cm)") color black
+		emit sonar_data : distance(10)
+	}
+}
+
+/* 
+ * COORDINATOR
+ */
+QActor coordinator context ctxfirefly {
+	[# 
+		var DMIN = 30 
+		var IsSyncActive = false
+	#]
+	
+	State s0 initial {
+		println("Coordinator | In attesa del Sonar...") color green
+	}
+	Goto work
+
+	State work { }
+	Transition t0 
+		whenTime 1500        -> emitSyncSignal
+		whenEvent sonar_data -> handleSonar
+
+	State handleSonar {
+		onMsg( sonar_data : distance(D) ){
+			[# var Distance = payloadArg(0).toInt() #]
+			if [# Distance < DMIN #] {
+				if [# !IsSyncActive #] {
+					emit startSync : startSync(1)
+					[# IsSyncActive = true #]
+					println("Coordinator | SYNC ATTIVATO") color green
+				}
+			} else {
+				if [# IsSyncActive #] {
+					emit stopSync : stopSync(1)
+					[# IsSyncActive = false #]
+					println("Coordinator | SYNC DISATTIVATO") color green
+				}
+			}
+		}
+	}
+	Goto work
+
+	State emitSyncSignal {
+		if [# IsSyncActive #] {
+			emit sync : sync(1)
+		}
+	}
+	Goto work
+}
+
+/* 
+ * FIREFLY (Template per firefly1, replicate per 2 e 3)
+ */
+QActor firefly1 context ctxfirefly {
+	[# 
+		var X = 1; var Y = 1; 
+		var RandomTime = 0L 
+	#]
+	State s0 initial { println("$name | Start") color magenta }
+	Goto randomFlashing
+
+	State randomFlashing {
+		[# RandomTime = kotlin.math.abs(java.util.Random().nextLong() % 1000) + 500 #]
+		forward griddisplay -m cellstate : cellstate($X,$Y,1)
+		delayVar RandomTime
+		forward griddisplay -m cellstate : cellstate($X,$Y,0)
+		delayVar RandomTime
+	}
+	Transition t0 
+		whenTime 50          -> randomFlashing
+		whenEvent startSync  -> wait_sync
+
+	State wait_sync {
+		println("$name | Sincronizzata...") color magenta
+	}
+	Transition t1
+		whenEvent sync      -> flash
+		whenEvent stopSync  -> randomFlashing
+
+	State flash {
+		forward griddisplay -m cellstate : cellstate($X,$Y,1)
+		delay 500
+		forward griddisplay -m cellstate : cellstate($X,$Y,0)
+	}
+	Goto wait_sync
+}
+
+// Replica breve per Firefly 2 e 3 (cambia solo X, Y e colori)
+QActor firefly2 context ctxfirefly {
+	[# var X = 4; var Y = 4; var RandomTime = 0L #]
+	State s0 initial { } Goto randomFlashing
+	State randomFlashing {
+		[# RandomTime = kotlin.math.abs(java.util.Random().nextLong() % 1000) + 500 #]
+		forward griddisplay -m cellstate : cellstate($X,$Y,1)
+		delayVar RandomTime
+		forward griddisplay -m cellstate : cellstate($X,$Y,0)
+		delayVar RandomTime
+	}
+	Transition t0 
+		whenTime 50          -> randomFlashing
+		whenEvent startSync  -> wait_sync
+
+	State wait_sync {
+		println("$name | Sincronizzata...") color magenta
+	}
+	Transition t1
+		whenEvent sync      -> flash
+		whenEvent stopSync  -> randomFlashing
+
+	State flash {
+		forward griddisplay -m cellstate : cellstate($X,$Y,1)
+		delay 500
+		forward griddisplay -m cellstate : cellstate($X,$Y,0)
+	}
+	Goto wait_sync
+}
+
+QActor firefly3 context ctxfirefly {
+	[# var X = 7; var Y = 7; var RandomTime = 0L #]
+	State s0 initial { } Goto randomFlashing
+	State randomFlashing {
+		[# RandomTime = kotlin.math.abs(java.util.Random().nextLong() % 1000) + 500 #]
+		forward griddisplay -m cellstate : cellstate($X,$Y,1)
+		delayVar RandomTime
+		forward griddisplay -m cellstate : cellstate($X,$Y,0)
+		delayVar RandomTime
+	}
+	Transition t0 
+		whenTime 50          -> randomFlashing
+		whenEvent startSync  -> wait_sync
+
+	State wait_sync {
+		println("$name | Sincronizzata...") color magenta
+	}
+	Transition t1
+		whenEvent sync      -> flash
+		whenEvent stopSync  -> randomFlashing
+
+	State flash {
+		forward griddisplay -m cellstate : cellstate($X,$Y,1)
+		delay 500
+		forward griddisplay -m cellstate : cellstate($X,$Y,0)
+	}
+	Goto wait_sync
+}

@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/css/foundation.min.css" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <style type="text/css">
+        body { margin: 30px; font-family: Tahoma, sans-serif; line-height: 1.6; }
+        h1 { font-size: 170%; background-color: rgba(86, 56, 253, 0.9); padding: 15px; border-radius: 10px; color: white; border-bottom: 3px solid rgb(163, 161, 161); }
+        h2 { background-color: #9ed8ff; font-size: 140%; padding: 10px; border-radius: 8px; margin-top: 1.5em; color: #242424; }
+        h3 { background-color: #e6ccff; font-size: 110%; padding: 8px; border-radius: 6px; }
+        
+        div.req { background-color: #d9ffb3; border: 2px solid #4CAF50; padding: 20px; margin: 15px 0; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+        div.remark { background-color: #E3F2FD; border: 1.5px solid #BBDEFB; padding: 15px; margin: 10px 0; border-radius: 15px; font-style: italic; }
+        
+        pre { font-family: "Consolas", monospace; font-size: 90%; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-left: 5px solid #7a94ff; overflow-x: auto; margin: 10px 0; }
+        code { color: #d63384; font-weight: bold; }
+        
+        ks { color: #0000CD; font-weight: bold; } /* Keywords */
+        kc { color: #008000; font-weight: bold; } /* Comments/Controls */
+        k  { color: #990000; font-weight: bold; } /* Actors */
+        
+        .footer-custom { background-color: #5638fd; color: white; padding: 20px; border-radius: 10px; margin-top: 30px; display: flex; align-items: center; justify-content: space-between; }
+        ul { list-style-type: square; margin-left: 30px; }
+        li { margin-bottom: 8px; }
+    </style>
+    <title>Savino Paolo - firefly Sonar</title>
+</head>
+
+<body>
+
+    <header>
+        <h1>Progetto Firefly Sonar <small style="font-size: 60%; opacity: 0.8;">| <a href="https://github.com/savino1703/issLab2026/tree/main/firefly_sonar" style="color: white;">LINK AL PROGETTO</a></small></h1>
+    </header>
+
+    <main>
+        <section>
+            <h2>Requisiti</h2>
+            <div class="req">
+                Realizzazione di un simulatore di un sistema costituito da 3 lucciole e dotato di un <b>Sonar</b>. 
+                Il comportamento del sistema è dinamico:
+                <ul>
+                    <li>Quando il sonar rileva un ostacolo a una distanza <b>minore di una soglia prefissata DMIN</b>, le lucciole devono lampeggiare in modo <b>sincronizzato</b>.</li>
+                    <li>Quando la distanza dell’ostacolo (ri)supera DMIN, le lucciole tornano a lampeggiare in modo <b>random</b> (asincrono).</li>
+                </ul>
+                È richiesta la definizione di un modello <b>QAK</b> che simuli accuratamente l'alternanza tra le due modalità.
+            </div>
+        </section>
+
+        <section>
+            <h2>Analisi dei Requisiti</h2>
+            <ul>
+                <li><strong>Sonar:</strong> Un'entità (fisica o simulata) che genera eventi asincroni contenenti dati sulla distanza.</li>
+                <li><strong>Soglia DMIN:</strong> Il valore critico che determina il cambio di stato del sistema.</li>
+                <li><strong>Comportamento Ibrido:</strong> A differenza del progetto precedente, la sincronizzazione non è uno stato definitivo. Le lucciole devono possedere due modalità operative intercambiabili (Random e Sincrona).</li>
+                <li><strong>Reversibilità:</strong> Il sistema deve poter tornare fluidamente allo stato iniziale quando l'ambiente fisico cambia.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Analisi del Problema</h2>
+            <h3>Architettura del Sistema Estesa</h3>
+            <p>Il sistema mantiene la separazione in due contesti (<code>ctxfirefly</code> e <code>ctxgrid</code>), ma introduce una nuova fonte di dati: l'evento globale <code>sonar_data : distance(D)</code>, generato da un componente hardware reale o da un attore mock (<code>sonarsimulator</code>).</p>
+
+            
+            <p>La necessità di alternare tra modalità random e sincrona impone un cambiamento radicale alla logica di controllo. Il Coordinatore non può più limitarsi a emettere un segnale di clock fisso. Deve diventare un coordinatore capace di:</p>
+            <ul>
+                <li>Ascoltare continuamente i dati del sonar.</li>
+                <li>Valutare la condizione <code>D < DMIN</code>.</li>
+                <li>Attivare/disattivare dinamicamente il segnale di clock (il "metronomo" da 1500ms) inviando comandi espliciti alle lucciole (<code>startSync</code> e <code>stopSync</code>).</li>
+            </ul>
+            
+            <div class="remark">
+                <b>Limite QAk e Pattern Architetturale:</b> Nel linguaggio QAk, non è possibile gestire contemporaneamente una transizione temporale (<code>whenTime</code>) e una reattiva (<code>whenEvent</code>) nello stesso blocco di stato. Per risolvere questo conflitto, è stato introdotto il pattern dello <b>"Stato Vuoto" (work)</b>, che funge da snodo non bloccante per l'attore.
+            </div>
+        </section>
+
+        <section>
+            <h2>Progetto</h2>
+            <h3>Il Coordinatore "Intelligente"</h3>
+            <p>Il <k>coordinator</k> gestisce una variabile di stato <code>IsSyncActive</code>. Utilizza uno stato di attesa attiva (<code>work</code>) per alternare la gestione del timer (emissione del clock) e l'arrivo asincrono dei dati del sonar.</p>
+            
+            <pre>
+<ks>State</ks> work { <kc>// Punto di snodo non bloccante</kc> }
+<ks>Transition</ks> t0 
+    <ks>whenTime</ks> 1500        -> emitSyncSignal
+    <ks>whenEvent</ks> sonar_data -> handleSonar
+
+<ks>State</ks> handleSonar {
+    <ks>onMsg</ks>( sonar_data : distance(D) ){
+        [# var Distance = payloadArg(0).toInt() #]
+        if [# Distance < DMIN #] {
+            if [# !IsSyncActive #] {
+                <ks>emit</ks> startSync : startSync(1)
+                [# IsSyncActive = true #]
+            }
+        } else {
+            <kc>// Logica inversa per stopSync</kc>
+        }
+    }
+}
+<ks>Goto</ks> work</pre>
+
+            <h3>Firefly: Attori Ibridi e Reversibili</h3>
+            <p>Le lucciole ora alternano un ciclo interno autonomo (tramite delay randomici) a uno stato reattivo in cui attendono il segnale dal coordinatore.</p>
+            
+            <pre>
+<kc>// --- MODALITÀ ASINCRONA ---</kc>
+<ks>State</ks> randomFlashing {
+    <kc>// Lampeggio con timer interno casuale</kc>
+}
+<ks>Transition</ks> t0 
+    <ks>whenTime</ks> 50          -> randomFlashing
+    <ks>whenEvent</ks> startSync  -> wait_sync
+
+<kc>// --- MODALITÀ SINCRONA ---</kc>
+<ks>State</ks> wait_sync {
+    <kc>// In attesa del segnale di clock globale</kc>
+}
+<ks>Transition</ks> t1
+    <ks>whenEvent</ks> sync      -> flash
+    <ks>whenEvent</ks> stopSync  -> randomFlashing</pre>
+
+            <h3>Vantaggi della soluzione</h3>
+            <ul>
+                <li><strong>Reattività:</strong> Il sistema risponde ai cambiamenti ambientali (sonar) in tempo reale.</li>
+                <li><strong>Modularità:</strong> La logica della distanza è centralizzata nel coordinatore; le lucciole ignorano cosa sia il sonar e si limitano a obbedire ai segnali di cambio stato.</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+       <div style="background-color:rgba(86, 56, 253, 0.9); width:80%;text-align:left;color:white">
+By Paolo Savino email: paolo.savino2@studio.unibo.it
+<!-- <img src="./img/mbot-S.jpg" alt="mbot" width="30%" height="15%"> -->
+<img src="img/paolo.JPG" alt="paolo" width="20%" height="20%">
+GIT repo: <a href="https://github.com/savino1703/issLab2026" style="color: white;">github.com/savino1703/issLab2026</a>
+</div> 
+    </footer>
+
+</body>
+</html>

@@ -27,4 +27,6 @@
 
 ### Sistema QActors
  
- * [Firefly](https://savino1703.github.io/issLab2026/documento_firefly3sync.html):  Realizzazione di un simulatore di un sistema  costituito da 3 lucciole che si accendono e spengono in modo sincronizzato
+ * [Firefly Sync](https://savino1703.github.io/issLab2026/documento_firefly3sync.html):  Realizzazione di un simulatore di un sistema  costituito da 3 lucciole che si accendono e spengono in modo sincronizzato
+
+ * [Firefly Sensor](https://savino1703.github.io/issLab2026/documento_firefly_sensor.html):   Realizzazione di un simulatore di un sistema costituito da 3 lucciole e dotato di un Sonar con controllo ostacoli a distanza, il quale sincronizza o meno il loro stato (acceso/spento)
