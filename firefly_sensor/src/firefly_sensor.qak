@@ -53,7 +53,7 @@ QActor coordinator context ctxfirefly {
 	State work { }
 	Transition t0 
 		whenTime 1500        -> emitSyncSignal
-		whenEvent sonar_data -> handleSonar
+		whenEvent sonar_data -> handleSonar 
 
 	State handleSonar {
 		onMsg( sonar_data : distance(D) ){

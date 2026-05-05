@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/css/foundation.min.css" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <style type="text/css">
+        body { margin: 30px; font-family: Tahoma, sans-serif; line-height: 1.6; }
+        h1 { font-size: 170%; background-color: rgba(86, 56, 253, 0.9); padding: 15px; border-radius: 10px; color: white; border-bottom: 3px solid rgb(163, 161, 161); }
+        h2 { background-color: #9ed8ff; font-size: 140%; padding: 10px; border-radius: 8px; margin-top: 1.5em; color: #242424; }
+        h3 { background-color: #e6ccff; font-size: 110%; padding: 8px; border-radius: 6px; }
+        
+        div.req { background-color: #d9ffb3; border: 2px solid #4CAF50; padding: 20px; margin: 15px 0; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+        div.remark { background-color: #E3F2FD; border: 1.5px solid #BBDEFB; padding: 15px; margin: 10px 0; border-radius: 15px; font-style: italic; }
+        
+        pre { font-family: "Consolas", monospace; font-size: 90%; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-left: 5px solid #7a94ff; overflow-x: auto; margin: 10px 0; }
+        code { color: #d63384; font-weight: bold; }
+        
+        ks { color: #0000CD; font-weight: bold; } /* Keywords */
+        kc { color: #008000; font-weight: bold; } /* Comments/Controls */
+        k  { color: #990000; font-weight: bold; } /* Actors */
+        
+        .footer-custom { background-color: #5638fd; color: white; padding: 20px; border-radius: 10px; margin-top: 30px; display: flex; align-items: center; justify-content: space-between; }
+        ul { list-style-type: square; margin-left: 30px; }
+        li { margin-bottom: 8px; }
+    </style>
+    <title>Savino Paolo - DDR Perimeter & Radar</title>
+</head>
+
+<body>
+
+    <header>
+        <h1>Progetto DDR Perimeter & Radar <small style="font-size: 60%; opacity: 0.8;">| <a href="https://github.com/savino1703/issLab2026/tree/main/robot_ddr" style="color: white;">LINK AL PROGETTO</a></small></h1>
+    </header>
+
+    <main>
+        <section>
+            <h2>Requisiti</h2>
+            <div class="req">
+                Costruire un sistema software che comanda un Differential Drive Robot (DDR) in modo che, partendo dalla posizione iniziale HOME, il robot si sposti lungo il perimetro di una stanza rettangolare vuota. Il DDR si deve fermare quando tornato in HOME. <br><br>
+                Il DDR è anche sensibile ai dati rilevati da un Radar. Quando il Radar rileva un 'intruso' a una distanza minore di una distanza prefissata <code>DMIN</code>:
+                <ul>
+                    <li>Se il DDR si sta muovendo, il DDR <b>si ferma</b> fino a che il Radar non rileva più un 'intruso' così vicino.</li>
+                    <li>Se il DDR è fermo in HOME, il DDR <b>ruota su se stesso</b> fino a che un 'intruso' così vicino scompare.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>Analisi dei Requisiti</h2>
+            <p>Dalla lettura attenta del testo emergono le seguenti entità logiche e concetti fondamentali da chiarire:</p>
+            
+            <ul>
+                <li><strong>Differential Drive Robot (DDR):</strong> È un robot capace di eseguire comandi di base per il movimento: avanzare e ruotare (solitamente di 90 gradi alla volta per mappare un rettangolo).</li>
+                <li><strong>Stanza rettangolare vuota:</strong> Implica un ambiente con 4 lati, quindi 4 ostacoli. Il robot dovrà eseguire 4 percorsi lineari alternati a 4 rotazioni.</li>
+                <li><strong>Posizione HOME:</strong> È una coordinata che rappresenta l'inizio e la fine del percorso. Il sistema deve avere un modo per riconoscere quando il percorso è completato.</li>
+                <li><strong>Radar:</strong> Un'entità sorgente di informazioni. Genera misurazioni continue o a eventi sulla distanza di un 'intruso' (un ostacolo imprevisto).</li>
+                <li><strong>DMIN:</strong> Una soglia numerica predefinita. Serve come trigger per scatenare un comportamento anomalo del robot.</li>
+            </ul>
+
+            <h3>Comportamento Ibrido del Robot</h3>
+            <p>Il sistema richiesto non è un semplice esecutore di comandi sequenziali. Il DDR, in contemporanea, deve poter:</p>
+            <ol>
+                <li>Esplorare il perimetro in modo autonomo e terminare il lavoro.</li>
+                <li>Interrompere istantaneamente il suo task se l'ambiente esterno cambia (Radar rileva <code>distanza < DMIN</code>).</li>
+            </ol>
+
+            <p>Per questi motivi necessita di due stati distinti: </p>
+            <ol>
+                <li>Uno <strong>stato in movimento</strong> in cui segue il perimetro</li>
+                <li>Uno <strong>stato in cui è fermo </strong> e rotea finchè rileva intrusi nelle vicinanze (questo stato sarà sia quello iniziale che quello finale).</li>
+            </ol>
+
+        </section>
+
+    </main>
+   <br/>
+    <footer>
+       <div style="background-color:rgba(86, 56, 253, 0.9); width:80%;text-align:left;color:white">
+By Paolo Savino email: paolo.savino2@studio.unibo.it
+<!-- <img src="./img/mbot-S.jpg" alt="mbot" width="30%" height="15%"> -->
+<img src="img/paolo.JPG" alt="paolo" width="20%" height="20%">
+GIT repo: <a href="https://github.com/savino1703/issLab2026" style="color: white;">github.com/savino1703/issLab2026</a>
+</div> 
+    </footer>
+
+</body>
+</html>
