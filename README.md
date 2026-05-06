@@ -30,3 +30,6 @@
  * [Firefly Sync](https://savino1703.github.io/issLab2026/documento_firefly3sync.html):  Realizzazione di un simulatore di un sistema  costituito da 3 lucciole che si accendono e spengono in modo sincronizzato
 
  * [Firefly Sensor](https://savino1703.github.io/issLab2026/documento_firefly_sensor.html):   Realizzazione di un simulatore di un sistema costituito da 3 lucciole e dotato di un Sonar con controllo ostacoli a distanza, il quale sincronizza o meno il loro stato (acceso/spento)
+
+ * [Robot ddr](https://savino1703.github.io/issLab2026/documento_ddr): Costruire un sistema software che comanda un Differential Drive Robot (DDR) in modo che, partendo dalla posizione iniziale HOME, il robot si sposti lungo il perimetro di una stanza rettangolare vuota e verifichi, con un Radar, la presenza di eventuali ostacoli lungo il percorso 
+               
