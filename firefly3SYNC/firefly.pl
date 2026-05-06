@@ -5,7 +5,7 @@ dispatch( cellstate, cellstate(X,Y,COLOR) ). %commute cell state
 event( sync, sync(V) ). %evento di sincronizzazione globale
 %====================================================================================
 context(ctxfirefly, "localhost",  "TCP", "8040").
-context(ctxgrid, "127.0.0.1",  "TCP", "8050").
+context(ctxgrid, "192.168.1.77",  "TCP", "8050").
  qactor( griddisplay, ctxgrid, "external").
   qactor( coordinator, ctxfirefly, "it.unibo.coordinator.Coordinator").
  static(coordinator).

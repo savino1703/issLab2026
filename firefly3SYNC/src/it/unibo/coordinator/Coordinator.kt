@@ -32,26 +32,15 @@ class Coordinator ( name: String, scope: CoroutineScope, isconfined: Boolean=fal
 		return { //this:ActionBasciFsm
 				state("s0") { //this:State
 					action { //it:State
-						CommUtils.outgreen("Coordinator | Aspetto 5 secondi prima di iniziare...")
-						delay(5000) 
-						//genTimer( actor, state )
-					}
-					//After Lenzi Aug2002
-					sysaction { //it:State
-					}	 	 
-					 transition( edgeName="goto",targetState="loop", cond=doswitch() )
-				}	 
-				state("loop") { //this:State
-					action { //it:State
-						CommUtils.outgreen("Coordinator | SYNC!")
+						CommUtils.outgreen("Coordinator | Aspetto 10 secondi per la sincronizzazione...")
+						delay(10000) 
+						CommUtils.outgreen("Coordinator | BASTA CAOS! EMETTO IL SEGNALE DI SYNC!")
 						emit("sync", "sync(1)" ) 
-						delay(1500) 
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition( edgeName="goto",targetState="loop", cond=doswitch() )
 				}	 
 			}
 		}

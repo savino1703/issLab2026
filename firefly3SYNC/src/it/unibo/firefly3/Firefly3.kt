@@ -29,29 +29,21 @@ class Firefly3 ( name: String, scope: CoroutineScope, isconfined: Boolean=false,
 	override fun getBody() : (ActorBasicFsm.() -> Unit){
 		//val interruptedStateTransitions = mutableListOf<Transition>()
 		//IF actor.withobj !== null val actor.withobj.name� = actor.withobj.method�ENDIF
-		
-			   var X = 2
-			   var Y = 2
+		  
+			   var  X          = 2
+			   var  Y          = 2
+			   var Timer       = 500L 
 		return { //this:ActionBasciFsm
 				state("s0") { //this:State
 					action { //it:State
-						CommUtils.outblue("$name | X=$X Y=$Y")
+						 Timer = java.util.Random().nextLong(1000L,2000L )   
+						CommUtils.outblue("$name | X=$X Y=$Y  Timer=$Timer")
 						//genTimer( actor, state )
 					}
 					//After Lenzi Aug2002
 					sysaction { //it:State
 					}	 	 
-					 transition( edgeName="goto",targetState="wait_sync", cond=doswitch() )
-				}	 
-				state("wait_sync") { //this:State
-					action { //it:State
-						CommUtils.outblue("$name | aspetto sync...")
-						//genTimer( actor, state )
-					}
-					//After Lenzi Aug2002
-					sysaction { //it:State
-					}	 	 
-					 transition(edgeName="t02",targetState="flash",cond=whenEvent("sync"))
+					 transition( edgeName="goto",targetState="flash", cond=doswitch() )
 				}	 
 				state("flash") { //this:State
 					action { //it:State
@@ -62,8 +54,21 @@ class Firefly3 ( name: String, scope: CoroutineScope, isconfined: Boolean=false,
 					}
 					//After Lenzi Aug2002
 					sysaction { //it:State
+				 	 		stateTimer = TimerActor("timer_flash", 
+				 	 					  scope, context!!, "local_tout_"+name+"_flash", Timer )  //OCT2023
 					}	 	 
-					 transition( edgeName="goto",targetState="wait_sync", cond=doswitch() )
+					 transition(edgeName="t04",targetState="flash",cond=whenTimeout("local_tout_"+name+"_flash"))   
+					transition(edgeName="t05",targetState="handle_sync",cond=whenEvent("sync"))
+				}	 
+				state("handle_sync") { //this:State
+					action { //it:State
+						 Timer = 1500L  
+						//genTimer( actor, state )
+					}
+					//After Lenzi Aug2002
+					sysaction { //it:State
+					}	 	 
+					 transition( edgeName="goto",targetState="flash", cond=doswitch() )
 				}	 
 			}
 		}

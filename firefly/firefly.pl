@@ -1,10 +1,14 @@
 %====================================================================================
 % firefly description   
 %====================================================================================
-dispatch( cellstate, cellstate(X,Y,COLOR) ). %da firefly1 a griddisplaymock
+event( start, start(RowsN,ColsN) ).
+event( flashlamp, flashlamp(NAME,TIME) ).
+dispatch( cellstate, cellstate(X,Y,COLOR) ). %commute cell state
 %====================================================================================
-context(ctxfirefly, "localhost",  "TCP", "8080").
+context(ctxfirefly, "localhost",  "TCP", "8460").
 context(ctxgrid, "127.0.0.1",  "TCP", "8050").
  qactor( griddisplay, ctxgrid, "external").
+  qactor( creator, ctxfirefly, "it.unibo.creator.Creator").
+ static(creator).
   qactor( firefly, ctxfirefly, "it.unibo.firefly.Firefly").
- static(firefly).
+dynamic(firefly). %%Oct2023 

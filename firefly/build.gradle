@@ -139,7 +139,7 @@ tasks.withType(Copy).configureEach {
 
 application {
     //Define the main class for the application.
-    mainClassName = 'it.unibo.ctxfirefly.MainCtxfireflyKt'
+    mainClassName    = 'it.unibo.ctxfirefly.MainCtxfireflyKt'
 }
  
  jar {

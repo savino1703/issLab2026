@@ -51,11 +51,11 @@
             <p>Dalla lettura attenta del testo emergono le seguenti entità logiche e concetti fondamentali da chiarire:</p>
             
             <ul>
-                <li><strong>Differential Drive Robot (DDR):</strong> È un robot capace di eseguire comandi di base per il movimento: avanzare e ruotare (solitamente di 90 gradi alla volta per mappare un rettangolo).</li>
-                <li><strong>Stanza rettangolare vuota:</strong> Implica un ambiente con 4 lati, quindi 4 ostacoli. Il robot dovrà eseguire 4 percorsi lineari alternati a 4 rotazioni.</li>
-                <li><strong>Posizione HOME:</strong> È una coordinata che rappresenta l'inizio e la fine del percorso. Il sistema deve avere un modo per riconoscere quando il percorso è completato.</li>
-                <li><strong>Radar:</strong> Un'entità sorgente di informazioni. Genera misurazioni continue o a eventi sulla distanza di un 'intruso' (un ostacolo imprevisto).</li>
-                <li><strong>DMIN:</strong> Una soglia numerica predefinita. Serve come trigger per scatenare un comportamento anomalo del robot.</li>
+                <li><strong>Differential Drive Robot (DDR):</strong> Un oggetto fisico, capace di eseguire comandi di base per il movimento: avanzare e ruotare (solitamente di 90 gradi alla volta per mappare un rettangolo).</li>
+                <li><strong>Stanza rettangolare vuota:</strong> Un'area grande b*h con 4 lati misurata in unità robotica (r). Il robot dovrà eseguire 4 percorsi lineari alternati a 4 rotazioni.</li>
+                <li><strong>HOME:</strong> È un'area che rappresenta l'inizio e la fine del percorso. Il sistema deve avere un modo per riconoscere quando il percorso è completato.</li>
+                <li><strong>Radar:</strong> Un'entità (fisica o simulata) che controlla, a intervalli regolari, la distranza tra il DDR ed eventuali 'intrusi' (ostacoli imprevisti posizionati lungo il perimetro), generando poi eventi asincroni.</li>
+                <li><strong>DMIN:</strong> Una soglia numerica predefinita. Serve come trigger per scatenare un comportamento anomalo del robot, quando rilevato dal Radar.</li>
             </ul>
 
             <h3>Comportamento Ibrido del Robot</h3>
