@@ -51,11 +51,87 @@
             <p>Dalla lettura attenta del testo emergono le seguenti entità logiche e concetti fondamentali da chiarire:</p>
             
             <ul>
-                <li><strong>Differential Drive Robot (DDR):</strong> Un oggetto fisico, non un punto, il quale occuperà una certa area, per semplicità quadrata. Il DDR, comandato dal sistema, può muoversi in avanti e ruotare su sè stesso di 90°.</li>
-                <li><strong>Stanza rettangolare vuota:</strong> Un rettangolo in un piano euclideo con base e altezza espresse in metri, indicando con coordinate X e Y una posizione all'interno della tale. Essa può anche essere vista come una griglia le cui celle sono misurate in unità robotiche</li>
-                <li><strong>HOME:</strong> È un'area, una posizione iniziale in cui il DDR si trova all'interno della stanza, nonchè posizione finale del percorso.</li>
-                <li><strong>Radar:</strong> Un'entità (fisica o simulata), un attore, che controlla, a intervalli regolari, la distranza tra il DDR ed eventuali 'intrusi' (ostacoli imprevisti posizionati lungo il perimetro) ad una distanza inferiore di <code>DMIN</code>, generando poi eventi asincroni utili come informazioni per il sistema.</li>
-                <li><strong>DMIN:</strong> Una soglia numerica predefinita. Serve come trigger per scatenare un comportamento anomalo del robot, quando rilevato dal Radar.</li>
+                <li><strong>Differential Drive Robot (DDR):</strong> Un oggetto fisico già a disposizione del committente, non un punto, il quale occuperà una certa area, per semplicità quadrata di lato R. Il DDR, comandato dal sistema, può muoversi in avanti e ruotare su sè stesso di 90°, non è altro che un semplice attuatore di comandi.</li>
+                <li><strong>Stanza rettangolare vuota:</strong> Un rettangolo in un piano euclideo con base B e altezza H espresse in metri, indicando con coordinate X e Y una posizione all'interno della tale. Essa può anche essere vista come una griglia le cui celle sono misurate in unità robotiche</li>
+                <li><strong>HOME:</strong> È un'area, una posizione iniziale in cui il DDR si trova all'interno della stanza, nonchè posizione finale del percorso. Questa non è altro che una cella all'interno della griglia.</li>
+                   
+                <code>
+                [# <br/>
+                data class Posizione(val x: Int, val y: Int)<br/>
+                                                            <br/>
+                data class Stanza(val B: Double, val H: Double, val R: Double) {<br/>
+	              val larghezza: Double = B * R <br/>
+    	          val altezza: Double = H * R <br/>
+                                                <br/>
+                  val home: Posizione = Posizione(0, 0) <br/>
+	            }<br/>
+                #]<br/>
+                </code>
+            
+                
+                <li><strong>Radar:</strong> Un'entità (fisica o simulata), un attore, che controlla, a intervalli regolari, la distranza tra il DDR ed eventuali 'intrusi' (ostacoli imprevisti posizionati lungo il perimetro) ad una distanza inferiore di <code>DMIN</code>, generando poi eventi asincroni utili come informazioni per il sistema, ovvero la distanza rilevata D.</li>
+                <li><strong>DMIN:</strong> Una soglia numerica predefinita. Serve come trigger per scatenare un comportamento anomalo del robot, quando rilevato dal Radar.</li><br/>
+                esistono due metodi per fare comunicare il radar con il sistema:<br/>
+                Il radar comunica con eventi la distanza rilevata degli intrusi<br/>
+                <code>
+                    System ddr <br/>
+                    <br/>
+                    Event radar : distance(D)<br/>
+                    Context ctxddr	ip [ host="localhost" 	port=8010 ]<br/>
+                    <br/>
+                    QActor radar context ctxddr {<br/>
+                        [# <br/>
+                        var D=0<br/>
+                        var Timer=2200<br/>
+                        #]<br/>
+                      State s0 initial{<br/>
+                        println("starting")<br/>
+                      }<br/>
+                      Goto radarDistanza<br/>
+                      <br/>
+                      radarDistanza{<br/>
+                        emit radar : distance(D)<br/>
+                      }<br/>
+                      Transition t0<br/>
+                         whenTimeVar Timer -> radarDistanza<br/>
+                    }<br/>
+                </code>
+<br/>
+                Il radar comunica la distanza in risposta a richieste del sistema<br/>
+                <code>
+                  System ddr<br/>
+                  <br/>
+                Request getDistance : getDistance(D) <br/>
+                Reply   radar : distance(D)   for getDistance<br/>
+                Context ctxddr	ip [ host="localhost" 	port=8010 ]<br/>
+                <br/>
+                QActor radar context ctxddr{<br/>
+                    [# <br/>
+                        var D = 0<br/>
+                        var Timer = 2200<br/>
+                    #]<br/>
+                    State s0 initial {<br/>
+                        println("starting")<br/>
+                    }<br/>
+                    Goto radarDistanza<br/>
+                    <br/>
+                    State radarDistanza{<br/>
+                        //<br/>
+                    }<br/>
+                    Transition t0 <br/>
+                        whenTimeVar Timer -> radarDistanza<br/>
+                        whenRequest getDistance -> handleRequest<br/>
+                <br/>
+                    State handleRequest{<br/>
+                        onMsg( getDistance : getDistance(D) ){<br/>
+                            replyTo getDistance with radar : distance( $D )  <br/>
+                        } <br/>
+                    }  <br/>
+                    Transition t0 <br/>
+                        whenTimeVar Timer ->radarDistanza<br/>
+                }  <br/>
+                </code>
+           
             </ul>
 
             <h3>Comportamento Ibrido del Robot</h3>
