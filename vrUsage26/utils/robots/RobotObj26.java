@@ -1,6 +1,6 @@
 package robots;
 import java.util.Observable;
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
 import unibo.basicomm23.interfaces.IApplMessage;
 import unibo.basicomm23.interfaces.IObserver;
 import unibo.basicomm23.interfaces.IObserverMsg;

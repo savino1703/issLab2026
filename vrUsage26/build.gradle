@@ -1,14 +1,17 @@
-/*
- */
 plugins {
     id 'java'
     id 'eclipse'
     id 'application'
-	//id 'jacoco'
 }
+
 repositories {
     mavenCentral()
-    flatDir { dirs '../unibolibs' }
+    /* Cerca i file .jar personalizzati sia nella cartella superiore (standard Unibo)
+       sia in una cartella 'libs' interna al progetto per sicurezza.
+    */
+    flatDir { 
+        dirs '../unibolibs', './libs' 
+    }
 }
 
 version '1.0'
@@ -18,86 +21,55 @@ java {
 }
 
 dependencies {
+    // TEST
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 
-//OkHttp library for websockets with Kotlin
-	//implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.14.0'    
-	implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.3' 
-	// https://mvnrepository.com/artifact/com.squareup.okhttp3/mockwebserver
-	testImplementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: '4.9.3'
-    
- 
-//SOCKET.IO (for WEnv)
-	implementation group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
-    //javax.websocket api is only the specification
-	implementation group: 'org.glassfish.tyrus.bundles', name: 'tyrus-standalone-client', version: '1.9'
+    // WEBSOCKETS (OkHttp & Java-WebSocket)
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.3' 
+    testImplementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: '4.9.3'
+    implementation group: 'javax.websocket', name: 'javax.websocket-api', version: '1.1'
+    implementation group: 'org.glassfish.tyrus.bundles', name: 'tyrus-standalone-client', version: '1.9'
+    implementation group: 'org.java-websocket', name: 'Java-WebSocket', version: '1.6.0'
 
-   implementation group: 'org.java-websocket', name: 'Java-WebSocket', version: '1.6.0'
+    // HTTP (Apache Components - Risolve gli errori org.apache.http)
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+    implementation 'org.apache.httpcomponents:httpcore:4.4.16'
+    implementation 'commons-logging:commons-logging:1.2'
 
-//HTTP
-	implementation 'org.apache.httpcomponents:httpclient:4.5'
+    // LOGGING
+    implementation 'ch.qos.logback:logback-classic:1.4.12'
+    implementation 'org.slf4j:slf4j-api:2.0.9'
 
-//LOGGING
-	//implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
-	//implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.25'
-	implementation 'ch.qos.logback:logback-classic:1.4.12'
-  	//implementation 'ch.qos.logback:logback-classic:1.2.11'  //vs.1.5.7     1.2.11 (app1.log ok)     1.4.11
-
-//JSON
-    // https://mvnrepository.com/artifact/org.json/json
-    //implementation group: 'org.json', name: 'json', version: '20160810'
-    
+    // JSON (Risolve gli errori org.json.simple)
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 
-//CUSTOM unibo
+    // CUSTOM UNIBO (Assicurati che i .jar siano in ../unibolibs o ./libs)
     implementation name: '2p301'
     implementation name: 'uniboInterfaces'
-    //implementation name: 'unibo.qakactor23-5.0'
     implementation name: 'unibo.basicomm23-1.0'
- 
-
-   
 }
 
+/* Configurazione dei sorgenti: 
+   Gradle deve sapere che il codice si trova sia in 'src' che in 'utils'
+*/
 sourceSets {
     main {
         java {
-            srcDir 'utils'
-            srcDir 'src'   // Importante per i file generati Qak
+            srcDirs = ['src', 'utils']
             exclude 'main/**'
         }
     }
 }  
- 
 
-//Avoid duplication of src in Eclipse
-/*
+application {
+    // Classe principale da eseguire
+    mainClass = 'appls.BoundaryWithBasicMoves'
+}
+
+// Configurazione specifica per Eclipse per evitare conflitti di classpath
 eclipse {
     classpath {
-        sourceSets -= [sourceSets.main, sourceSets.test]
+        downloadJavadoc = true
+        downloadSources = true
     }
 }
-*/
-application {
-    //Define the main class for the application.
-    //mainClassName    = 'calibrate.RoomSideLength'
-    mainClassName    = 'appls.BoundaryWithBasicMoves'
-}
- 
-/*
-jar {
-    from sourceSets.main.allSource
-    manifest { attributes 'Main-Class': "$mainClassName" }
-}
-
- 
-distributions {
-    main {
-        contents {
-            from './RadarSystemConfig.json'
-        }
-    }
-}
-*/
-//git rm --cached .project
-//git rm --cached .classpath
