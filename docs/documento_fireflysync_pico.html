@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/css/foundation.min.css" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <style type="text/css">
+        body { margin: 30px; font-family: Tahoma, sans-serif; line-height: 1.6; }
+        h1 { font-size: 170%; background-color: rgba(86, 56, 253, 0.9); padding: 15px; border-radius: 10px; color: white; border-bottom: 3px solid rgb(163, 161, 161); }
+        h2 { background-color: #9ed8ff; font-size: 140%; padding: 10px; border-radius: 8px; margin-top: 1.5em; color: #242424; }
+        h3 { background-color: #e6ccff; font-size: 110%; padding: 8px; border-radius: 6px; }
+        
+        div.req { background-color: #d9ffb3; border: 2px solid #4CAF50; padding: 20px; margin: 15px 0; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+        div.remark { background-color: #E3F2FD; border: 1.5px solid #BBDEFB; padding: 15px; margin: 10px 0; border-radius: 15px; font-style: italic; }
+        
+        pre { font-family: "Consolas", monospace; font-size: 90%; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-left: 5px solid #7a94ff; overflow-x: auto; margin: 10px 0; }
+        code { color: #d63384; font-weight: bold; }
+        
+        ks { color: #0000CD; font-weight: bold; } /* Keywords */
+        kc { color: #008000; font-weight: bold; } /* Comments/Controls */
+        k  { color: #990000; font-weight: bold; } /* Actors */
+        
+        .footer-custom { background-color: #5638fd; color: white; padding: 20px; border-radius: 10px; margin-top: 30px; display: flex; align-items: center; justify-content: space-between; }
+        ul { list-style-type: square; margin-left: 30px; }
+        li { margin-bottom: 8px; }
+    </style>
+    <title>Savino Paolo - fireflysync_picow</title>
+</head>
+
+<body>
+
+    <header>
+        <h1>Progetto fireflysync con picow<small style="font-size: 60%; opacity: 0.8;">| <a href="https://github.com/savino1703/issLab2026/tree/main/firefly3SYNC" style="color: white;">LINK AL PROGETTO</a></small></h1>
+    </header>
+
+    <main>
+        <section>
+       <h2>Requisiti</h2>
+            <div class="req">
+                Realizzazione di un sistema distribuito (denominato <b>firefly3SYNC_picow</b>) costituito da N lucciole (N=3 per il prototipo iniziale). 
+                Il sistema deve scalare su diversi PC di laboratorio, ciascuno collegato fisicamente a un <b>Raspberry PicoW</b>.
+                <br><br>
+                Il comportamento deve evolvere in due fasi temporali:
+                <ol>
+                    <li><strong>Fase Asincrona (0-10s):</strong> Ogni lucciola lampeggia autonomamente utilizzando il proprio LED embedded sul PicoW con una frequenza propria.</li>
+                    <li><strong>Fase Sincrona (dopo 10s):</strong> Le lucciole devono allineare il lampeggio dei LED fisici per agire all'unisono.</li>
+                </ol>
+                È richiesta la definizione di un modello <b>QAK</b> per la logica su PC e di un componente software per il PicoW.
+            </div>
+        </section>
+
+        <section>
+            <h2>Analisi dei Requisiti</h2>
+            <ul>
+                <li><strong>Identità Ibrida:</strong> La "Lucciola" non è solo un software. È un'entità composta da una <b>logica di controllo</b> (eseguita su PC tramite QActor) e un <b>attuatore fisico</b> (il LED del Raspberry PicoW).</li>
+                <li><strong>Lucciola (Firefly):</strong> Un attore capace di emettere segnali visivi (ON/OFF) e di ricevere stimoli esterni.</li>
+                <li><strong>Fase Asincrona:</strong> Ogni attore deve possedere un meccanismo di timing interno indipendente.</li>
+                <li><strong>Ponte Seriale:</strong> Il PicoW comunica con il PC tramite protocollo seriale (USB). Il software su PC deve essere in grado di inviare comandi binari (es. <code>1</code> per ON, <code>0</code> per OFF) in tempo reale.</li>
+                <li><strong>Osservabilità Fisica:</strong> A differenza di una simulazione puramente grafica, la verifica del requisito di sincronia avviene tramite l'osservazione diretta dei LED fisici nel laboratorio.</li>
+            </ul>
+            </ul>
+        </section>
+
+         <section>
+            <h2>Problem Analysis</h2>
+            <p>
+                L'obiettivo centrale di questa parte del progetto è gestire la transizione delle lucciole da uno stato di 
+                <strong>autonomia asincrona</strong> (ognuna lampeggia per i fatti suoi) a uno di <strong>sincronizzazione collettiva</strong>. 
+               A tale scopo, esistono strategie implementative diverse:
+            </p>
+
+            <ul>
+                <li>
+                    <strong>Strategia della Variabile Nascosta:</strong> È l'approccio più semplice. Le lucciole non comunicano tra loro; 
+                    semplicemente, dopo un timer locale di 10 secondi, tutte passano contemporaneamente a una frequenza di lampeggio (<code>FLAMP</code>) 
+                    comune prestabilita. L'impegno richiesto è minimo.
+                </li>
+                <li>
+                    <strong>Strategia della Regina (Orchestratore):</strong> Si introduce un'entità centrale ("Lucciola Regina") che comanda il gruppo. 
+                    Può imporre una nuova frequenza a tutte dopo un certo tempo o, in alternativa, emettere impulsi di sincronizzazione costanti 
+                    che le altre lucciole devono seguire come un metronomo. È un sistema <i>Master/Slave</i> di facile realizzazione.
+                </li>
+                <li>
+                    <strong>Modello di Kuramoto:</strong> È l'approccio più avanzato e biologicamente realistico. Si basa sull'idea di oscillatori accoppiati: 
+                    ogni lucciola, quando percepisce il "flash" di una vicina, accelera o decelera la propria fase per allinearsi. 
+                    La sincronizzazione è un fenomeno <strong>emergente</strong> che nasce dal basso senza un coordinatore.
+                </li>
+                <li>
+                    <strong>Variante Small World:</strong> Una versione più complessa di Kuramoto dove la comunicazione non è totale. 
+                    Ogni lucciola influenza solo un numero limitato di vicini (K) con alcuni collegamenti casuali "a lunga distanza". 
+                    L'impegno di modellazione qui è molto alto.
+                </li>
+            </ul>
+
+            <div class="remark">
+                <strong>Valutazione Strategica:</strong> Come primo prototipo, puntiamo sulla <b>Variabile Nascosta</b> 
+                o sulla <b>Regina a impulsi</b>, così da lavorare subito, in maniera più facile, con l'infrastruttura PC + PicoW, perdendo un po' nel realismo della simulazione. 
+            </div>
+
+            <h3>Entità Astratte individuate</h3>
+            <p>Dall'analisi emergono due concetti logici fondamentali:</p>
+            <ul>
+                <li>
+                    <strong>Lucciola:</strong> Unità autonoma che deve gestire contemporaneamente il proprio timing interno e 
+                    gli stimoli esterni. Per questo motivo, è meglio modellarla come un <strong>attore</strong> (QActor) 
+                    piuttosto che come un semplice oggetto, per evitare blocchi durante l'attesa dei messaggi.
+                </li>
+                <li>
+                    <strong>Mezzo di Comunicazione:</strong> Un canale (fisico o simulato) che permetta la diffusione 
+                    del segnale di "flash" tra tutti i nodi della rete.
+                </li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Test plans</h2>
+        </section>
+
+        <section>
+            <h2>Project</h2>
+            <div class="req">
+                Nel laboratorio vi sono N (N>1) PC, ciascuno collegato a un Raspberry PicoW. 
+                L'obiettivo è simulare il comportamento sincronizzato delle lucciole mediante i Led dei PicoW.
+            </div>
+
+            <h3>Analisi dei Componenti</h3>
+            <ul>
+                <li><strong>Lucciola (QActor):</strong> Ogni unità è modellata come un Attore. L'uso di <code>QActor</code> è preferibile ai semplici POJO poiché ogni lucciola deve gestire messaggi asincroni (impulsi di sincronizzazione) e mantenere uno stato interno (fase/frequenza) senza bloccare il sistema.</li>
+                <li><strong>PicoW (Node):</strong> Agisce come un terminale di output fisico, ricevendo comandi via seriale dal rispettivo QActor-Lucciola.</li>
+                <li><strong>Network (UDP/Interaction):</strong> Il mezzo attraverso cui le lucciole "vedono" i lampi altrui o ricevono ordini dalla Regina.</li>
+            </ul>
+
+            <h3>Rappresentazione dei Componenti</h3>
+            <pre><code>
+{
+  "project": "Firefly_Sync",
+  "entities": [
+    {
+      "name": "Firefly_Actor",
+      "implementation": "QActor",
+      "attributes": ["FLAMP", "InternalPhase", "LocalTimer"],
+      "actions": ["emitFlash", "adjustPhase", "updateLed"]
+    },
+    {
+      "name": "Queen_Actor",
+      "role": "Orchestrator",
+      "actions": ["broadcastSync", "setGlobalFrequency"]
+    }
+  ],
+  "communication": {
+    "inter_pc": "UDP_Broadcast_Events",
+    "pc_to_pico": "Serial_Protocol_Binary"
+  },
+  "strategies_mapped": [
+    {"id": "S1", "name": "Centralized_Master", "complexity": "1/5"},
+    {"id": "S2", "name": "Emergent_Kuramoto", "complexity": "4/5"},
+    {"id": "S3", "name": "Small_World_Network", "complexity": "5/5"}
+  ]
+}
+            </code></pre>
+        </section>
+        
+    </main>
+
+    <footer>
+       <div style="background-color:rgba(86, 56, 253, 0.9); width:80%;text-align:left;color:white">
+By Paolo Savino email: paolo.savino2@studio.unibo.it
+<!-- <img src="./img/mbot-S.jpg" alt="mbot" width="30%" height="15%"> -->
+<img src="img/paolo.JPG" alt="paolo" width="20%" height="20%">
+GIT repo: <a href="https://github.com/savino1703/issLab2026" style="color: white;">github.com/savino1703/issLab2026</a>
+</div> 
+    </footer>
+
+</body>
+</html>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+           

@@ -32,4 +32,6 @@
  * [Firefly Sensor](https://savino1703.github.io/issLab2026/documento_firefly_sensor.html):   Realizzazione di un simulatore di un sistema costituito da 3 lucciole e dotato di un Sonar con controllo ostacoli a distanza, il quale sincronizza o meno il loro stato (acceso/spento)
 
  * [Robot ddr](https://savino1703.github.io/issLab2026/documento_ddr): Costruire un sistema software che comanda un Differential Drive Robot (DDR) in modo che, partendo dalla posizione iniziale HOME, il robot si sposti lungo il perimetro di una stanza rettangolare vuota e verifichi, con un Radar, la presenza di eventuali ostacoli lungo il percorso 
+
+ * [Firefly Sincronizzato con picow](https://savino1703.github.io/issLab2026/documento_fireflysync_pico.html): Realizzazione di un sistema distribuito costituito da N lucciole. Il sistema deve scalare su diversi PC di laboratorio, ciascuno collegato fisicamente a un Raspberry PicoW.
                
