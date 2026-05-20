@@ -1,0 +1,123 @@
+System ddrboundary
+
+// ----------------------------------------------------------------
+// Messaggi e Segnali
+// ----------------------------------------------------------------
+Dispatch move     : move(M)         // l|r|a|d|h
+Request step      : step(TIME)      // Richiesta di avanzamento temporizzato
+Reply stepdone    : stepdone(V) for step
+Reply stepfailed  : stepfailed(DURATION, CAUSE) for step
+
+Dispatch start    : start(ARG)
+Event radar       : distance(D)     // Dal PicoW
+
+// ----------------------------------------------------------------
+// Contesti e Attori Esterni
+// ----------------------------------------------------------------
+Context ctxboundary      ip [host="localhost" port=8120]
+Context ctxrobotservice26 ip [host="127.0.0.1" port=8125]
+
+ExternalQActor robotactor context ctxrobotservice26
+
+QActor boundaryworker context ctxboundary {
+    [#
+        var laticompletati = 0
+        val DMIN = 20.0
+        var Intruder = false
+        val StepTime = 350L // Tempo per ogni "passo" elementare
+    #]
+
+    State s0 initial {
+        println("boundaryworker | Pronto. In attesa di 'start'.")
+    }
+    Transition t0 whenMsg start   -> doStep
+                  whenEvent radar -> checkRadarHome
+
+    // --- LOGICA DI MOVIMENTO CON STEP ---
+    State doStep {
+        // Tento di fare un passo avanti
+        request robotactor -m step : step($StepTime)
+    }
+    Transition t1 whenReply stepdone   -> doStep             // Passo fatto, continua avanti
+                  whenReply stepfailed -> handleWallDetected // Ho urtato il muro!
+                  whenEvent radar      -> checkRadarWhileMoving
+
+    State handleWallDetected {
+        onMsg(stepfailed : stepfailed(D, C)) {
+            println("boundaryworker | MURO RILEVATO. Girone a sinistra (l).")
+            forward robotactor -m move : move(l)
+            delay 500 // Tempo per completare la rotazione
+            [# laticompletati++ #]
+        }
+    }
+    Goto checkEnd
+
+    State checkEnd {
+        println("boundaryworker | Lati completati: $laticomplicati")
+    }
+    // Se ho completato 4 lati, mi fermo in HOME, altrimenti riprendo a fare step
+    Goto home if [# laticompletati >= 4 #] else doStep
+
+    // --- GESTIONE RADAR (SISTEMA BLOCCANTE) ---
+    State checkRadarWhileMoving {
+        onMsg(radar : distance(D)) {
+            [# val Dist = payloadArg(0).toDouble() #]
+            if [# Dist < DMIN #] {
+                println("boundaryworker | INTRUSO! Stop (h).")
+                [# Intruder = true #]
+                forward robotactor -m move : move(h)
+            }
+        }
+    }
+    Goto stoppedByRadar if [# Intruder #] else doStep
+
+    State stoppedByRadar { }
+    Transition t2 whenEvent radar -> checkClearWhileStopped
+
+    State checkClearWhileStopped {
+        onMsg(radar : distance(D)) {
+            [# val Dist = payloadArg(0).toDouble() #]
+            if [# Dist >= DMIN #] {
+                println("boundaryworker | Libero. Riprendo.")
+                [# Intruder = false #]
+            }
+        }
+    }
+    Goto doStep if [# !Intruder #] else stoppedByRadar
+
+    // --- LOGICA IN HOME ---
+    State home {
+        println("boundaryworker | In HOME. Ciclo terminato.")
+        forward robotactor -m move : move(h)
+        [# laticompletati = 0 #]
+    }
+    Transition t3 whenMsg start   -> doStep
+                  whenEvent radar -> checkRadarHome
+
+    State checkRadarHome {
+        onMsg(radar : distance(D)) {
+            [# val Dist = payloadArg(0).toDouble() #]
+            if [# Dist < DMIN #] {
+                println("boundaryworker | INTRUSO IN HOME! Rotazione (l).")
+                [# Intruder = true #]
+                forward robotactor -m move : move(l)
+            }
+        }
+    }
+    Goto rotatingAtHome if [# Intruder #] else home
+
+    State rotatingAtHome { }
+    Transition t4 whenEvent radar -> checkClearInHome
+
+    State checkClearInHome {
+        onMsg(radar : distance(D)) {
+            [# val Dist = payloadArg(0).toDouble() #]
+            if [# Dist >= DMIN #] {
+                println("boundaryworker | Libero. Stop rotazione.")
+                [# Intruder = false #]
+                forward robotactor -m move : move(h)
+            }
+        }
+    }
+    Goto home if [# !Intruder #] else rotatingAtHome
+}
