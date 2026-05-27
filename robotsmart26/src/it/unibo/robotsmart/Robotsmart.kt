@@ -36,7 +36,7 @@ class Robotsmart ( name: String, scope: CoroutineScope, isconfined: Boolean=fals
 				var TargetY   = ""		 
 				var X         = ""
 				var Y         = "" 		
-				var StepTime = "345"
+				var StepTime = "335"
 		return { //this:ActionBasciFsm
 				state("s0") { //this:State
 					action { //it:State
@@ -91,7 +91,7 @@ class Robotsmart ( name: String, scope: CoroutineScope, isconfined: Boolean=fals
 				}	 
 				state("domoverobot") { //this:State
 					action { //it:State
-						CommUtils.outcyan("$name in ${currentState.stateName} | $currentMsg | ${Thread.currentThread().getName()} n=${Thread.activeCount()}")
+						CommUtils.outgreen("$name in ${currentState.stateName} | $currentMsg | ${Thread.currentThread().getName()} n=${Thread.activeCount()}")
 						 	   
 						if( checkMsgContent( Term.createTerm("moverobot(TARGETX,TARGETY,STEPTIME)"), Term.createTerm("moverobot(X,Y,STEPTIME)"), 
 						                        currentMsg.msgContent()) ) { //set msgArgList

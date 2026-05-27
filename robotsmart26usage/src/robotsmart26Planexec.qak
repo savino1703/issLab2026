@@ -1,0 +1,167 @@
+System robotsmart26usage
+	//mqttBroker "localhost" : 1883 eventTopic "robotsmart26in"  //SE definita MQTTBROKER, usa quell'addr
+/* * ------------------------------------------------
+ * Handled by robotsmart
+ * ------------------------------------------------
+ */ 
+Request  buildPlan   : buildPlan( PX,PY,TX,TY  )		"create plan from (PX,PY) to (TX,TY)"
+Reply buildPlanDone  : buildPlanDone( PLAN ) for buildPlan
+
+Request moverobot    :  moverobot(TARGETX, TARGETY,STEPTIME)  	"move from current pos to (TARGETX,TARGETY)"
+Reply moverobotdone  :  moverobotok(ARG)                    for moverobot
+Reply moverobotfailed:  moverobotfailed(PLANDONE, PLANTODO) for moverobot
+
+Dispatch noplan           : noplan(X)       //autodispatch  
+Dispatch setplanbuildelay : value(V)		"parameter = V >= 0"
+
+Request  doplan     : doplan( PLAN, STEPTIME )	"execute PLAN with STEPTIME"
+Reply doplandone    : doplandone( ARG )         for doplan
+Reply doplanfailed  : doplanfailed( PLANTODO )  for doplan
+
+Dispatch nextmove     : nextmove(M)			"autodispatch"
+Dispatch nomoremove   : nomoremove(M)       "autodispatch"
+
+Event alarm   : alarm(X)		"event at application level"
+
+Request step       : step(TIME)	                        "step command for TIME duration"
+Reply stepdone     : stepdone(V)                 for step
+Reply stepfailed   : stepfailed(DURATION, CAUSE) for step
+
+Dispatch move      : move(M)  "MOVE = l|r|a|d|h   mosse aril sincrone ok"
+Dispatch setrobotstate: setpos(X,Y,D) 		"set robot position to (X,Y) direction D=up|down|left|right" 
+
+Request setdirection : dir( D )  			"set robot direction to D=up|down|left|right" 
+Reply setdirectiondone : pos(PX,PY) for setdirection
+
+Request getrobotstate : getrobotstate(ARG)		"request robot state ARG unused"
+Reply robotstate      : robotstate(POS,DIR)  for getrobotstate  "POS->pos(X,Y) DIR->up|down|left|right"
+
+Request getenvmap     : getenvmap(X)				"request environment map as string"
+Reply   envmap        : envmap(MAP)  for getenvmap  "MAP->string "
+
+Request tuneAtHome   : tuneAtHome(X)                  "reposition in home X don't care"
+Reply tuneDone       : tuneDone(X)  for tuneAtHome
+
+Event vrinfo      : vrinfo(SOURCE,INFO)     "streamed: emesso da WEnv"
+Event  sonardata  : sonar( DISTANCE ) 	    "streamed: emesso dal SONAR di WEnv"	
+Event  sonaralarm : distance( DISTANCE ) 	"emesso ad uso di enti esterni al sistema"	
+
+Context ctxrobotsmartusage ip [host="localhost" port=8120]
+Context ctxrobotsmart ip [host="127.0.0.1" port=8020]
+
+ExternalQActor robotsmart context ctxrobotsmart
+
+QActor robotsmartusage context ctxrobotsmartusage {
+    State s0 initial {
+        printCurrentMessage color black
+        println("robotsmartusage | avviato.")
+    }
+}
+
+/* * ---------------------------------------------------------------------------------
+ * robotsmart26planexec: Gestore ed esecutore passo-passo di piani (es. "w w w")
+ * ---------------------------------------------------------------------------------
+*/ 
+/* * ---------------------------------------------------------------------------------
+ * robotsmart26planexec: Gestore ed esecutore passo-passo di piani (es. "w w w")
+ * ---------------------------------------------------------------------------------
+*/ 
+QActor robotsmart26planexec context ctxrobotsmartusage {
+    [#
+        var PianoRimanente = ""
+        var MossaCorrente   = ""
+        var StepTime        = 330L
+        var PianoFallito    = ""
+    #]
+
+    State s0 initial {
+        printCurrentMessage color blue
+        println("Pronto ad eseguire richieste di piano (doplan).")
+    }
+    Transition t0 
+        whenRequest doplan -> piano
+
+    State piano {
+        printCurrentMessage color blue
+        onMsg( doplan : doplan(PLAN, TIMESTEP) ){
+            [#
+                // Puliamo la stringa rimuovendo spazi intermedi per isolare i singoli caratteri
+                PianoRimanente = payloadArg(0).replace(" ", "")
+                StepTime = payloadArg(1).toLong()
+            #]
+            println("Inizio esecuzione stringa piano: $PianoRimanente con StepTime: $StepTime")
+        }
+    }
+    Goto controllaPiano
+
+    State controllaPiano {
+        // Usiamo Kotlin per decidere in modo sicuro quale messaggio spedirci per cambiare stato
+        [#
+            if (PianoRimanente.length == 0) {
+                forward("nomoremove", "nomoremove(done)", "robotsmart26planexec")
+            } else {
+                forward("nextmove", "nextmove(work)", "robotsmart26planexec")
+            }
+        #]
+    }
+    Transition t0
+        whenMsg nomoremove -> pianoFinito
+        whenMsg nextmove   -> estraiMossa
+
+    State estraiMossa {
+        [#
+            MossaCorrente = PianoRimanente.first().toString()
+            PianoRimanente = PianoRimanente.drop(1)
+        #]
+        println("Mossa estratta: $MossaCorrente | Rimanenti: $PianoRimanente")
+        
+        [#
+            if (MossaCorrente == "w") {
+                forward("nextmove", "nextmove(w)", "robotsmart26planexec")
+            } else {
+                forward("nextmove", "nextmove(skip)", "robotsmart26planexec")
+            }
+        #]
+    }
+    Transition t0
+        whenMsg nextmove -> controllaTipoMossa
+
+    State controllaTipoMossa {
+        // Questo stato fa da buco nero per decidere se andare in 'esegui' o tornare in 'controllaPiano'
+    }
+    Goto esegui if [# MossaCorrente == "w" #] else controllaPiano
+
+    State esegui {
+        println("Esecuzione passo singolo 'w'. Rimanenti: $PianoRimanente")
+        request robotsmart -m step : step($StepTime)
+    }
+    Transition t0
+        whenReply stepdone   -> passoOk
+        whenReply stepfailed -> passoFallito
+
+    State passoOk {
+        println("Singolo passo completato con successo.")
+    }
+    Goto controllaPiano
+
+    State passoFallito {
+        printCurrentMessage color red
+        onMsg( stepfailed : stepfailed(DURATION, CAUSE) ){
+            println("Errore o ostacolo incontrato, Causa: ${payloadArg(1)}")
+            [# 
+                PianoFallito = MossaCorrente + PianoRimanente 
+            #]
+        }
+        replyTo doplan with doplanfailed : doplanfailed($PianoFallito)
+    }
+    Transition t0 
+        whenRequest doplan -> piano
+
+    State pianoFinito {
+        printCurrentMessage color green
+        println("Intera sequenza di passi eseguita con successo.")
+        replyTo doplan with doplandone : doplandone(success)
+    }
+    Transition t0
+        whenRequest doplan -> piano
+}

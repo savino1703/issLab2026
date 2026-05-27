@@ -1,6 +1,10 @@
 System robotsmart26usage
-	mqttBroker "localhost" : 1883 eventTopic "robotsmart26in"  //SE definita MQTTBROKER, usa quell'addr
-
+	//mqttBroker "192.168.1.163" : 1883 eventTopic "robotsmartusage26in"  //SE definita MQTTBROKER, usa quell'addr
+/*
+ * ===========================================
+ * robotsmart26placetopos.qak
+ * ===========================================
+*/
 /*
  * ------------------------------------------------
  * Handled by robotsmart
@@ -33,12 +37,12 @@ Reply setdirectiondone : pos(PX,PY) for setdirection
 Request tuneAtHome   : tuneAtHome(X)                  "reposition in home X don't care"
 Reply tuneDone       : tuneDone(X)  for tuneAtHome
 
+
 Request getrobotstate : getrobotstate(ARG)		"request robot state ARG unused"
 Reply robotstate      : robotstate(POS,DIR)  for getrobotstate  "POS->pos(X,Y) DIR->up|down|left|right"
 
 
 Context ctxrobotsmartusage ip [host="localhost" port=8120]
-
 Context ctxrobotsmart      ip [host="127.0.0.1" port=8020]
 
 ExternalQActor robotsmart context ctxrobotsmart
@@ -46,75 +50,46 @@ ExternalQActor robotsmart context ctxrobotsmart
 //ExternalQActor planexec context ctxrobotsmart
 
 QActor robotsnartusage context ctxrobotsmartusage{
-	[# val StepTime = 335 
+	[# val StepTime = 345 
 	   var NLAP     = 0		
 	#]
 	State s0 initial{
 		println("$name | starts ") color blue
-		[# clearlog("./logs/robotsmart26usage.log") 			//vedi src/main/resources/logback.xml #]
-    	//Visualizzazione di A*
-    	forward robotsmart -m setplanbuildelay : value(0)
+		[# clearlog("./logs/robotsmart26usage.log") //vedi src/main/resources/logback.xml #]
 	}
-	Goto swing
+	Goto posrobotbeforeslot
 	
-	State swing{
+	State posrobotbeforeslot{
 		[# logger.info(  "${currentState.stateName}: setrobotstate at HOME"  ) #]
 		forward robotsmart -m setrobotstate : setpos(0,0,down)		
-		[# logger.info(  "${currentState.stateName}: move(i)"  ) #]
-		println("$name | swing ") color blue
-		forward robotsmart -m move : move(l)
-		delay 500
-		[# logger.info(  "${currentState.stateName}: move(r)"  ) #]
-		forward robotsmart -m move : move(r)
-   	 	delay 500
- 	}  
- 	Goto walkAlomgBoundary
+    	delay 500
+    	//Visualizzazione di A*
+    	forward robotsmart -m setplanbuildelay : value(150)
+    	request robotsmart -m moverobot : moverobot(3,5,345)
+ 
+ 	}
+ 	Transition t0 
+ 		whenReply moverobotdone   -> backtohome
+ 		whenReply moverobotfailed -> end
  	
-    State walkAlomgBoundary{
-     delay 300  //avoid too fast
-   	 println("$name | walkAlomgBoundary $NLAP") color blue
-   	 request robotsmart -m step : step( $StepTime ) 
-    }
-    Transition t0 
-    	whenReply stepdone   -> stepok
-    	whenReply stepfailed -> hitwall
-    
-    State stepok{
-    	[# logger.info(  "${currentState.stateName}: step done"  ) #]
-    }
-    Goto walkAlomgBoundary
-    
-    State hitwall{
-    	[# var TDONE = "0" #]
-    	//println("$name | hitwall ") color magenta
-    	onMsg( stepfailed : stepfailed(T,CAUSE) ){
-    		[#  TDONE = payloadArg(0) #]
-    		println("$name | hit wall after: $TDONE") color magenta
-    	}    	
-    	[# logger.info(  "${currentState.stateName}: step failed $NLAP"  ) #]   	
-    	forward robotsmart -m move : move(l)
-     	[# NLAP = NLAP + 1 #] 
-     	delay 500
-     }
-     Goto walkAlomgBoundary if [# NLAP < 4 #] else end
- 		
+ 	State backtohome{
+ 		request robotsmart -m moverobot : moverobot(0,0,345)
+ 	}
+ 	Transition t0 
+ 		whenReply moverobotdone   -> end
+ 		whenReply moverobotfailed -> end
+
  	State end{
- 		println("$name | tuneAtHome ") color cyan
  		request robotsmart -m tuneAtHome : tuneAtHome( end )
+ 		printCurrentMessage color magenta
  	}
  	Transition t0
  		whenReply tuneDone -> bye
  
  	State bye{
- 		printCurrentMessage color cyan
  		println("$name | bye ") color blue
  		[# System.exit(0) #] 		
  	}
- 	  
-//	 State end{ 
-//	 	//forward robotsmart -m move : move(l)
-//	 	delay 1000
-//	 	println("$name | BYE ") color blue
-//	 	[# System.exit(0) #]
-//	 }
-}
+ 	 
+ 	
+ }

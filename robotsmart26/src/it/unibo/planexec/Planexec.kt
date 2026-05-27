@@ -33,7 +33,7 @@ class Planexec ( name: String, scope: CoroutineScope, isconfined: Boolean=false,
 				var PlanOrig      = ""
 				var Plantodo      = ""
 				var CurMoveTodo   = ""		
-				var StepTime      = "345"
+				var StepTime      = "335"
 				var ExecDelay     = 70L   //(B)
 		return { //this:ActionBasciFsm
 				state("s0") { //this:State

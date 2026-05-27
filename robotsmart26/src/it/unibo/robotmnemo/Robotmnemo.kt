@@ -32,9 +32,9 @@ class Robotmnemo ( name: String, scope: CoroutineScope, isconfined: Boolean=fals
 		val rpos = smart.RobotPosUtils.getInstance()
 		val robot = robots.VRObjForQak(myself,"logs/robotsmart26.log")
 		 var doingAsynchStep = false   
-		 	   val stepTime        = 345L     
+		 	   //val stepTime        = 345L     
 		 	   var CurTime         = 0L	   
-		 	   var StepTime        = 345
+		 	   var StepTime        = 335
 		 	   var Plan            = ""
 		return { //this:ActionBasciFsm
 				state("s0") { //this:State
@@ -179,10 +179,9 @@ class Robotmnemo ( name: String, scope: CoroutineScope, isconfined: Boolean=fals
 						 val Dir  = rpos.getCurDir()
 						    		var res = false
 						CommUtils.outmagenta("$name | tuneAtHome Dir=$Dir")
-						  
-						    	   rpos.doMove( "w") 
 						if(  Dir == "up"  
-						 ){CommUtils.outyellow("$name | tuneAtHome upDir ")
+						 ){  rpos.doMove( "w")   
+						CommUtils.outyellow("$name | tuneAtHome upDir ")
 						 res = robot.step( 300 )  
 						CommUtils.outyellow("$name | tuneAtHome updDir res=$res ")
 						 robot.turnLeft()           
@@ -193,18 +192,25 @@ class Robotmnemo ( name: String, scope: CoroutineScope, isconfined: Boolean=fals
 						 rpos.doMove( "l" )         
 						CommUtils.outblack("$name |  ${rpos.getCurDir()}")
 						}
-						if(  Dir == "left"  
-						 ){ res = robot.step( 300 )   
-						CommUtils.outyellow("$name | tuneAtHome leftDir dostep1 res=$res ")
-						 robot.turnRight()        
-						 rpos.doMove( "r" )       
-						 robot.step( 300 )        
-						CommUtils.outyellow("$name | tuneAtHome leftDir dostep2 res=$res ")
-						 robot.turnLeft()   
-						 rpos.doMove( "l" )         
-						 robot.turnLeft()   
-						 rpos.doMove( "l" )         
-						}
+						else
+						 {if(  Dir == "left"  
+						  ){  rpos.doMove( "w")   
+						  res = robot.step( 300 )   
+						 CommUtils.outyellow("$name | tuneAtHome leftDir dostep1 res=$res ")
+						  robot.turnRight()        
+						  rpos.doMove( "r" )       
+						  robot.step( 300 )        
+						 CommUtils.outyellow("$name | tuneAtHome leftDir dostep2 res=$res ")
+						  robot.turnLeft()   
+						  rpos.doMove( "l" )         
+						  robot.turnLeft()   
+						  rpos.doMove( "l" )         
+						 }
+						 else
+						  {if(  Dir == "down"  
+						   ){}
+						  }
+						 }
 						CommUtils.outyellow("$name | tuneAtHome done ")
 						answer("tuneAtHome", "tuneDone", "tuneDone(ok)"   )  
 						//genTimer( actor, state )
@@ -225,7 +231,11 @@ class Robotmnemo ( name: String, scope: CoroutineScope, isconfined: Boolean=fals
 								if(  S.contains("ko")  
 								 ){ TDONE = NOW - CurTime  
 								CommUtils.outmagenta("$name | reply asynchstep failed after $R DT=$TDONE")
-								answer("step", "stepfailed", "stepfailed($TDONE,toofar)"   )  
+								 var DT = TDONE.toInt() / 2  
+								 robot.backward( DT)  
+								delay(300) 
+								 robot.halt()         
+								answer("step", "stepfailed", "stepfailed($TDONE,obst)"   )  
 								}
 								else
 								 {answer("step", "stepdone", "stepdone(ok)"   )  

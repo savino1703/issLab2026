@@ -23,3 +23,10 @@ package-lock.json
 docker/
 /.metadata/
 /src-gen/
+/.gitignore
+/Arch_robotsmart26.py
+/build2025.gradle
+/build2025Starting.gradle
+/robotsmart26.pl
+/settings.gradle
+/sysRules.pl
