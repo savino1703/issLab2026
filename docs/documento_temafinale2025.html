@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.4/dist/css/foundation.min.css" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <style type="text/css">
+        body { margin: 30px; font-family: Tahoma, sans-serif; line-height: 1.6; }
+        h1 { font-size: 170%; background-color: rgba(86, 56, 253, 0.9); padding: 15px; border-radius: 10px; color: white; border-bottom: 3px solid rgb(163, 161, 161); }
+        h2 { background-color: #9ed8ff; font-size: 140%; padding: 10px; border-radius: 8px; margin-top: 1.5em; color: #242424; }
+        h3 { background-color: #e6ccff; font-size: 110%; padding: 8px; border-radius: 6px; }
+        
+        div.req { background-color: #d9ffb3; border: 2px solid #4CAF50; padding: 20px; margin: 15px 0; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }
+        div.remark { background-color: #E3F2FD; border: 1.5px solid #BBDEFB; padding: 15px; margin: 10px 0; border-radius: 15px; font-style: italic; }
+        
+        pre { font-family: "Consolas", monospace; font-size: 90%; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-left: 5px solid #7a94ff; overflow-x: auto; margin: 10px 0; }
+        code { color: #d63384; font-weight: bold; }
+        
+        ks { color: #0000CD; font-weight: bold; } /* Keywords */
+        kc { color: #008000; font-weight: bold; } /* Comments/Controls */
+        k  { color: #990000; font-weight: bold; } /* Actors */
+        
+        .footer-custom { background-color: #5638fd; color: white; padding: 20px; border-radius: 10px; margin-top: 30px; display: flex; align-items: center; justify-content: space-between; }
+        ul { list-style-type: square; margin-left: 30px; }
+        li { margin-bottom: 8px; }
+    </style>
+    <title>Savino Paolo - Cargo Service</title>
+</head>
+
+<body>
+
+    <header>
+        <h1>Progetto Cargo Service <small style="font-size: 60%; opacity: 0.8;">| <a href="https://github.com/Tomassone/IngegneriaSistemiSoftware" style="color: white;">LINK AL PROGETTO</a></small></h1>
+    </header>
+
+    <main>
+        <section>
+            <h2>Requisiti</h2>
+            <div class="req">
+                La compagnia ci chiede di realizzare un sistema software (denominato cargoservice) che:
+                <ul>
+                    <li>sia in grado di ricevere la richiesta di caricare sul cargo un container di prodotto già registrato nel productservice. La richiesta viene rifiutata quando:
+                        <ul>
+                            <li>il peso del prodotto è valutato troppo elevato, poiché la nave può trasportare un carico massimo di MaxLoad>0 kg.</li>
+                            <li>la stiva è già piena, ovvero i 4 slot sono già occupati.</li>
+                        </ul>
+                        Se la richiesta viene accettata, il cargoservice associa uno slot al PID del prodotto e restituisce il nome dello slot riservato. Successivamente, attende che il container del prodotto venga consegnato alla ioport. Nel frattempo, altre richieste non vengono elaborate.
+                    </li>
+                    <li>sia in grado di rilevare (tramite il sensore sonar) la presenza del container del prodotto presso la ioport.</li>
+                    <li>sia in grado di garantire che il container del prodotto venga posizionato dal cargorobot all'interno dello slot riservato. Al termine del lavoro:
+                        <ul>
+                            <li>il cargorobot deve ritornare alla sua posizione HOME.</li>
+                            <li>il cargoservice può elaborare un'altra richiesta di carico.</li>
+                        </ul>
+                    </li>
+                    <li>sia in grado di mostrare lo stato corrente della stiva tramite una web-gui aggiornata dinamicamente.</li>
+                    <li>interrompa qualsiasi attività e accenda un led se il sensore sonar misura una distanza D > DFREE per almeno 3 secondi (probabile guasto del sonar). Il servizio riprende le sue attività non appena il sonar misura una distanza D &lt;= DFREE.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section>
+            <h2>Analisi dei Requisiti</h2>
+            <p>Dalla lettura attenta del testo emergono le seguenti entità logiche e concetti fondamentali da chiarire:</p>
+            
+            <ul>
+                <li><strong>Differential Drive Robot (cargorobot):</strong> Un oggetto fisico (attuatore di comandi) impiegato per il posizionamento e il carico dei container nei rispettivi slot riservati all'interno della stiva, muovendosi in avanti, all'indietro e ruotando su se stesso.</li>
+                <li><strong>Stiva della nave (hold):</strong> Un'area piana rettangolare destinata all'alloggiamento dei container, provvista di una porta di Input/Output (IOPort) e strutturata per ospitare un massimo di 4 slot fissi per il posizionamento sequenziale o logico dei prodotti merci.</li>
+                <li><strong>HOME:</strong> Rappresenta l'area e la posizione iniziale in cui il cargorobot si trova all'interno della stiva prima di iniziare la fase di trasporto, nonché la posizione finale obbligatoria in cui fermarsi al termine di ciascuna operazione di posizionamento riuscita.</li>
+                
+                <li><strong>Rappresentazione della Mappa:</strong> Per permettere gli spostamenti coordinati del robot, la mappa viene definita come una matrice di celle quadrate della larghezza di 1 unità robotica (lunghezza fisica del cargorobot). La singola cella deve consentire di distinguere la propria tipologia funzionale:
+                <pre><code>
+public interface ICell {
+    boolean isHome();
+    boolean isIoPort();
+    boolean isReservedSlot();
+    boolean isFree();
+}
+
+public interface IMap {
+    ICell getCell(int x, int y);
+    int getHomeX();
+    int getHomeY();
+}
+                </code></pre>
+                </li>
+                
+                <li><strong>Richiesta di Carico (loadRequest):</strong> Il sistema richiede di definire un messaggio contenente le informazioni utili per il processo decisionale (peso del prodotto, capacità complessiva, PID). Poiché i requisiti impongono una risposta esplicita e il blocco dell'elaborazione di nuove richieste esterne durante la fase di attesa della merce alla IOPort, l'interazione viene modellata nativamente come una richiesta Qak bloccante:
+                <pre><code>
+Request loadRequest : loadRequest(Weight, Capacity, PID)
+Reply loadAccepted : loadAccepted(SlotName) for loadRequest
+Reply loadRejected : loadRejected(Reason) for loadRequest
+                </code></pre>
+                <div class="remark">
+                    Questo modello soddisfa appieno il vincolo di non elaborare altre richieste durante l'attesa della consegna del container del prodotto alla ioport, in quanto la natura della richiesta qak è intrinsecamente bloccante.
+                </div>
+                </li>
+
+                <li><strong>Sonar Adapter (sonar):</strong> Un'entità logica astratta come attore che funge da adapter per i campionamenti del sensore fisico o simulato. Riceve le misurazioni di prossimità sulla porta di ingresso della stiva ed elabora gli eventi utili a rilevare la presenza del container:
+                <pre><code>
+QActor sonar context cargoservice {
+    State detect {
+        emit productDetected : productDetected(X)
+    }
+    Goto detect
+}
+                </code></pre>
+                </li>
+
+                <li><strong>Gestione Guasti (sonarDistance):</strong> Per consentire l'interruzione globale delle attività a causa di anomalie prolungate del sonar (distanza D > DFREE per più di 3 secondi), l'allarme viene descritto senza ricevitori espliciti ed è modellato sotto forma di evento asincrono di sistema:
+                <pre><code>
+Event sonarDistance : sonarDistance(D)
+                </code></pre>
+                </li>
+
+                <li><strong>Web GUI Service (guiservice):</strong> Un servizio adibito alla gestione dell'interfaccia di monitoraggio dinamica. Per raccogliere e sincronizzare le informazioni sullo stato della stiva e della posizione del robot, si introduce un attore delegato alle risposte di polling dati:
+                <pre><code>
+QActor guiservice context cargoservice {
+    State s0 initial {
+
+    }
+    Transition t0
+        whenMsg getX -> handleGetX
+}
+                </code></pre>
+                </li>
+
+                <li><strong>Robot Adapter (robot):</strong> Un componente software strutturato come attore adapter per tradurre le pianificazioni logistiche del cargoservice in comandi di movimento effettivi verso la porta di carico o verso i rispettivi blocchi di destinazione:
+                <pre><code>
+QActor robot context cargoservice {
+    State processLoad {
+    }
+
+    State goHome {
+    
+    }
+}
+                </code></pre>
+                </li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Analisi del Problema</h2>
+            <p><i>Contenuto da sviluppare in base all'interazione con il cliente e alla progettazione dell'architettura.</i></p>
+        </section>
+
+        <section>
+            <h2>Piani di Test</h2>
+            <p><i>Contenuto da sviluppare definendo i piani di test e le suite di test.</i></p>
+        </section>
+
+        <section>
+            <h2>Progetto</h2>
+            <p><i>Contenuto da sviluppare delineando i dettagli di implementazione.</i></p>
+        </section>
+
+        <section>
+            <h2>Testing</h2>
+            <p><i>Contenuto da sviluppare per i report di verifica e validazione.</i></p>
+        </section>
+
+        <section>
+            <h2>Deployment</h2>
+            <p><i>Contenuto da sviluppare dettagliando l'ambiente di deployment finale.</i></p>
+        </section>
+
+        <section>
+            <h2>Manutenzione</h2>
+            <p><i>Contenuto da sviluppare per le strategie post-deployment e di mantenimento.</i></p>
+        </section>
+    </main>
+
+    <br/>
+    <footer>
+        <div style="background-color:rgba(86, 56, 253, 0.9); width:80%; text-align:left; color:white; padding:15px; border-radius:10px;">
+            By Paolo Savino email: <a href="mailto:paolo.savino2@studio.unibo.it" style="color: white; text-decoration: underline;">paolo.savino2@studio.unibo.it</a><br>
+            <img src="img/paolo.JPG" alt="paolo" width="20%" height="20%" style="margin-top:10px; margin-bottom:10px; border-radius:5px;"><br>
+            GIT repo: <a href="https://github.com/savino1703/issLab2026" style="color: white; text-decoration: underline;">github.com/savino1703/issLab2026</a>
+        </div> 
+    </footer>
+
+</body>
+</html>
