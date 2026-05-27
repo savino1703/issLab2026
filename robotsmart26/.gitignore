@@ -30,3 +30,4 @@ docker/
 /robotsmart26.pl
 /settings.gradle
 /sysRules.pl
+/.gradle/
