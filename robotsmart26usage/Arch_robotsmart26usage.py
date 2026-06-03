@@ -26,9 +26,11 @@ with Diagram('robotsmart26usageArch', show=False, outformat='png', graph_attr=gr
      sys = Custom('','./qakicons/system.png')
 ### see https://renenyffenegger.ch/notes/tools/Graphviz/attributes/label/HTML-like/index
      with Cluster('ctxrobotsmartusage', graph_attr=nodeattr):
-          robotsmartusage=Custom('robotsmartusage','./qakicons/symActorWithobjSmall.png')
-          robotsmart26planexec=Custom('robotsmart26planexec','./qakicons/symActorWithobjSmall.png')
+          robotsnartusage=Custom('robotsnartusage','./qakicons/symActorWithobjSmall.png')
+          sentinel=Custom('sentinel','./qakicons/symActorWithobjSmall.png')
      with Cluster('ctxrobotsmart', graph_attr=nodeattr):
           robotsmart=Custom('robotsmart(ext)','./qakicons/externalQActor.png')
-     robotsmart26planexec >> Edge(color='magenta', style='solid', decorate='true', label='<step<font color="darkgreen"> stepdone stepfailed</font> &nbsp; >',  fontcolor='magenta') >> robotsmart
+     sys >> Edge( label='sonaralarm', **evattr, decorate='true', fontcolor='darkgreen') >> sentinel
+     robotsnartusage >> Edge(color='magenta', style='solid', decorate='true', label='<moverobot<font color="darkgreen"> moverobotdone moverobotfailed</font> &nbsp; tuneAtHome<font color="darkgreen"> tuneDone</font> &nbsp; >',  fontcolor='magenta') >> robotsmart
+     robotsnartusage >> Edge(color='blue', style='solid',  decorate='true', label='<setrobotstate &nbsp; setplanbuildelay &nbsp; >',  fontcolor='blue') >> robotsmart
 diag
